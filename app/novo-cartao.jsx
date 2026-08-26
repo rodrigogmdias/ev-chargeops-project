@@ -122,6 +122,9 @@ export default function NovoCartao() {
           <Button variant="primary" size="lg" block haptic icon="shield-check" disabled={invalido} onPress={salvar}>
             Salvar cartão
           </Button>
+          <Button variant="ghost" size="md" block onPress={() => router.back()}>
+            Cancelar
+          </Button>
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -148,7 +151,7 @@ const styles = StyleSheet.create({
   },
   cardMicroValue: { fontSize: 12, fontFamily: fonts.bold, color: colors.textMuted, marginTop: 2 },
   footer: {
-    paddingHorizontal: 16, paddingTop: 12, backgroundColor: colors.surfaceSheet,
+    paddingHorizontal: 16, paddingTop: 12, gap: 8, backgroundColor: colors.surfaceSheet,
     shadowColor: '#000', shadowOpacity: 0.55, shadowRadius: 40, shadowOffset: { width: 0, height: -12 },
     elevation: 16,
   },

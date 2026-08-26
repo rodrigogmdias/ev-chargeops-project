@@ -41,9 +41,22 @@ function BoltPulse() {
 export default function Sessao() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { sessao: s, ponto: p, encerrar } = useApp();
+  const { sessao: s, ponto: p, encerrar, meta, limModo, limValor, limKwh, maxValor, preAut } = useApp();
 
+  const grupoA = p.regime === 'A';
   const custo = s.kwh * p.tarifa;
+
+  const limSessaoTxt = limModo === 'cheia'
+    ? 'Até encher'
+    : limModo === 'valor' ? `R$ ${fmt(Math.min(limValor, maxValor))}` : `${fmt(Math.min(limKwh, 29), 1)} kWh`;
+  const limSessaoHint = limModo === 'cheia'
+    ? 'Encerra ao completar a carga'
+    : `Faltam ${fmt(Math.max(0, meta - s.kwh))} kWh`;
+
+  // Limite atingido: o estado encerra a sessão sozinho e a tela acompanha.
+  useEffect(() => {
+    if (s.phase === 'tolerancia') router.replace('/tolerancia');
+  }, [s.phase, router]);
 
   const onEncerrar = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
@@ -60,7 +73,7 @@ export default function Sessao() {
       <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
         <Animated.View entering={FadeIn.duration(320)} style={{ alignItems: 'center', paddingVertical: 8 }}>
           <Ring
-            progress={Math.min(1, s.kwh / 24)}
+            progress={Math.min(1, s.kwh / meta)}
             color={colors.statusCharging}
             glow
           >
@@ -113,7 +126,12 @@ export default function Sessao() {
         <Animated.View entering={FadeInDown.duration(320).delay(180).easing(motion.easeSheet)}>
           <Card padding={0}>
             <ListRow label="Ponto" value={p.nome} />
-            <ListRow label="Pré-autorização" value={`R$ ${fmt(p.preAut)}`} hint="Captura ao encerrar" />
+            <ListRow label="Limite da recarga" value={limSessaoTxt} hint={limSessaoHint} />
+            <ListRow
+              label={grupoA ? 'Cobrança' : 'Pré-autorização'}
+              value={grupoA ? 'Boleto de setembro' : `R$ ${fmt(preAut)}`}
+              hint={grupoA ? 'Rateio por kWh · unidade 42' : 'Captura ao encerrar'}
+            />
             <ListRow label="Término estimado" value="~ 22:20" hint="Aviso 15 min antes" divider={false} />
           </Card>
         </Animated.View>

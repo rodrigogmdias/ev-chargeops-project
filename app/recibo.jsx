@@ -17,7 +17,7 @@ const enter = (i) => FadeInDown.duration(320).delay(60 + 50 * i).easing(motion.e
 export default function Recibo() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { sessao: s, ponto: p, cartaoId, cartoes, resetSessao } = useApp();
+  const { sessao: s, ponto: p, cartaoId, cartoes, resetSessao, preAut } = useApp();
 
   const grupoA = p.regime === 'A';
   const custo = s.kwh * p.tarifa;
@@ -41,7 +41,7 @@ export default function Recibo() {
             <Icon name="circle-check" size={30} color={colors.statusCharging} />
           </Animated.View>
           <Animated.View entering={enter(0)} style={{ alignItems: 'center' }}>
-            <Text style={styles.cobradoLabel}>Cobrado no cartão</Text>
+            <Text style={styles.cobradoLabel}>{grupoA ? 'Vai para o boleto de setembro' : 'Cobrado no cartão'}</Text>
             <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 4 }}>
               <Text style={styles.cifra}>R$</Text>
               <Text style={styles.total}>{fmt(total)}</Text>
@@ -68,9 +68,9 @@ export default function Recibo() {
               hint={grupoA ? 'Rateio da infraestrutura do ponto' : 'Emitida ao encerrar a sessão'}
             />
             <ListRow
-              label="Pré-autorização liberada"
-              value={`R$ ${fmt(Math.max(0, p.preAut - custo - multa))}`}
-              hint="Volta ao limite do cartão em até 7 dias"
+              label={grupoA ? 'Fechamento do rateio' : 'Pré-autorização liberada'}
+              value={grupoA ? '01/09' : `R$ ${fmt(Math.max(0, preAut - custo - multa))}`}
+              hint={grupoA ? 'Relatório da unidade enviado à administradora' : 'Volta ao limite do cartão em até 7 dias'}
               divider={false}
             />
           </Card>
@@ -90,7 +90,11 @@ export default function Recibo() {
             <ListRow label="Ponto" value={p.nome} />
             <ListRow label="Início · fim" value="20:58 · 22:20" />
             <ListRow label="Potência média" value="6.1 kW" hint="Reduzida pelo balanceamento do prédio" />
-            <ListRow label="Cartão" value={`•••• ${ultimos4}`} divider={false} />
+            <ListRow
+              label={grupoA ? 'Forma de cobrança' : 'Cartão'}
+              value={grupoA ? 'Rateio no boleto' : `•••• ${ultimos4}`}
+              divider={false}
+            />
           </Card>
         </Animated.View>
 

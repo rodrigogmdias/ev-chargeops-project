@@ -48,6 +48,7 @@ export default function RootLayout() {
             <Stack.Screen name="consentimento" />
             <Stack.Screen name="(tabs)" options={{ animation: 'fade', gestureEnabled: false }} />
             <Stack.Screen name="ponto/[id]" />
+            <Stack.Screen name="confirmar" />
             <Stack.Screen name="pagamento" />
             <Stack.Screen
               name="novo-cartao"

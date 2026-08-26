@@ -51,6 +51,35 @@ export const CONSENT = [
   { id: 'marketing', icone: 'bell', label: 'Novidades do produto', hint: 'Comunicados sobre novas funções' },
 ];
 
+/** Folga da bateria do veículo simulado: 42% → 100% ≈ 29 kWh. */
+export const CAP = 29;
+
+export const HISTORICO = {
+  agosto: {
+    destino: 'Total no boleto de setembro',
+    qtd: '5 sessões',
+    barras: [{ label: 'S1', v: 11.8 }, { label: 'S2', v: 18.2 }, { label: 'S3', v: 4.1 }, { label: 'S4', v: 22.4 }, { label: 'S5', v: 9.8 }],
+    sessoes: [
+      { d: '25/08 · 22:20', kwh: 11.76, valor: 10.47, tom: 'charging', st: 'Concluída' },
+      { d: '23/08 · 07:42', kwh: 18.20, valor: 16.20, tom: 'charging', st: 'Concluída' },
+      { d: '21/08 · 19:05', kwh: 4.05, valor: 3.60, tom: 'fault', st: 'Interrompida · kWh parcial' },
+      { d: '19/08 · 21:30', kwh: 22.40, valor: 19.94, tom: 'charging', st: 'Concluída' },
+      { d: '17/08 · 08:14', kwh: 9.80, valor: 10.22, tom: 'idle', st: 'Ocupação de 6 min · R$ 1,50' },
+    ],
+  },
+  julho: {
+    destino: 'Total no boleto de agosto',
+    qtd: '4 sessões',
+    barras: [{ label: 'S1', v: 14.2 }, { label: 'S2', v: 8.6 }, { label: 'S3', v: 20.1 }, { label: 'S4', v: 12.9 }, { label: 'S5', v: 0 }],
+    sessoes: [
+      { d: '29/07 · 20:11', kwh: 12.90, valor: 11.48, tom: 'charging', st: 'Concluída' },
+      { d: '24/07 · 06:58', kwh: 20.10, valor: 17.89, tom: 'charging', st: 'Concluída' },
+      { d: '16/07 · 22:47', kwh: 8.60, valor: 7.65, tom: 'charging', st: 'Concluída' },
+      { d: '09/07 · 18:20', kwh: 14.20, valor: 12.64, tom: 'charging', st: 'Concluída' },
+    ],
+  },
+};
+
 export const PASSOS = [
   { label: 'Cartão autorizado', hint: 'Pré-bloqueio confirmado pelo banco' },
   { label: 'Ponto reservado para você', hint: 'Sessão vinculada à unidade 42' },
@@ -78,6 +107,14 @@ export function AppStateProvider({ children }) {
   const [cartaoId, setCartaoId] = useState('visa');
   const [cartoes, setCartoes] = useState(CARTOES_INICIAIS);
 
+  // Limite da recarga: 'cheia' (sem limite) | 'valor' (R$) | 'energia' (kWh)
+  const [limModo, setLimModo] = useState('cheia');
+  const [limValor, setLimValor] = useState(20);
+  const [limKwh, setLimKwh] = useState(10);
+
+  // Histórico
+  const [mes, setMes] = useState('agosto');
+
   // Session simulation
   // phase: idle | liberando | sessao | tolerancia | encerrada
   const [sessao, setSessao] = useState({
@@ -104,20 +141,43 @@ export function AppStateProvider({ children }) {
 
   const ponto = PONTOS.find((p) => p.id === pontoId) || PONTOS[0];
 
+  // Teto em R$ arredondado para baixo em múltiplos de 5, para os presets.
+  const maxValor = Math.floor((CAP * ponto.tarifa) / 5) * 5;
+
+  // Quanta energia o limite escolhido libera, em kWh.
+  const limiteKwh =
+    limModo === 'valor' ? Math.min(limValor, maxValor) / ponto.tarifa
+      : limModo === 'energia' ? Math.min(limKwh, CAP)
+        : CAP;
+
+  const meta = Math.min(CAP, limiteKwh);
+
+  // Grupo A não bloqueia cartão; no B a pré-autorização segue o limite (+5%).
+  const preAut = limModo === 'cheia' ? ponto.preAut : Math.max(20, Math.ceil(limiteKwh * ponto.tarifa * 1.05));
+
+  const encerrarRef = useRef(null);
+
   const iniciarSessao = useCallback(() => {
     stop();
     setSessao({ phase: 'sessao', passo: 4, kwh: 0, secs: 0, soc: 42, demanda: 22, throttling: false, tol: 600, multaSecs: 0 });
+    let fim = false;
     timers.current.tick = setInterval(() => {
       setSessao((s) => {
         if (s.phase !== 'sessao') return s;
         const throttling = s.secs > 26 && s.secs < 70;
         const kw = throttling ? 4.5 : 7.4;
-        const kwh = Math.min(24, s.kwh + kw * 0.0125);
-        const soc = Math.min(100, 42 + kwh * 2.1);
+        const kwh = Math.min(meta, s.kwh + kw * 0.0125);
+        const soc = Math.min(100, 42 + kwh * 2);
+        // Atingiu o limite: a sessão se encerra sozinha e cai na tolerância.
+        if (kwh >= meta - 0.0001 && !fim) {
+          fim = true;
+          clearInterval(timers.current.tick);
+          setTimeout(() => encerrarRef.current && encerrarRef.current(), 700);
+        }
         return { ...s, kwh, soc, secs: s.secs + 1, throttling, demanda: throttling ? 44 : 29 };
       });
     }, 250);
-  }, [stop]);
+  }, [stop, meta]);
 
   const iniciarLiberacao = useCallback(() => {
     stop();
@@ -142,6 +202,9 @@ export function AppStateProvider({ children }) {
       });
     }, 900);
   }, [stop]);
+
+  // A sessão precisa chamar `encerrar` sem recriar o timer a cada render.
+  useEffect(() => { encerrarRef.current = encerrar; }, [encerrar]);
 
   const pularTolerancia = useCallback(() => {
     setSessao((s) => (s.tol > 0 ? { ...s, tol: 0 } : { ...s, multaSecs: s.multaSecs + 300 }));
@@ -173,10 +236,15 @@ export function AppStateProvider({ children }) {
     consent, setConsent,
     pontoId, setPontoId, filtro, setFiltro, ponto,
     cartaoId, setCartaoId, cartoes, adicionarCartao,
+    limModo, setLimModo, limValor, setLimValor, limKwh, setLimKwh,
+    maxValor, limiteKwh, meta, preAut,
+    mes, setMes,
     sessao, iniciarLiberacao, iniciarSessao, encerrar, pularTolerancia, fecharSessao, resetSessao,
     toast, flash,
   }), [email, senha, codigo, torre, unidade, placa, consent, pontoId, filtro, ponto,
-    cartaoId, cartoes, adicionarCartao, sessao, iniciarLiberacao, iniciarSessao,
+    cartaoId, cartoes, adicionarCartao, limModo, limValor, limKwh,
+    maxValor, limiteKwh, meta, preAut, mes,
+    sessao, iniciarLiberacao, iniciarSessao,
     encerrar, pularTolerancia, fecharSessao, resetSessao, toast, flash]);
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;

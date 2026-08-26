@@ -14,6 +14,7 @@ import { useApp } from '../../src/state/AppState';
 const TABS = [
   { name: 'buscar', label: 'Buscar', icon: 'map-pin' },
   { name: 'recarga', label: 'Recarga', icon: 'zap' },
+  { name: 'historico', label: 'Histórico', icon: 'receipt' },
   { name: 'avisos', label: 'Avisos', icon: 'bell' },
 ];
 
@@ -92,6 +93,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="buscar" />
       <Tabs.Screen name="recarga" />
+      <Tabs.Screen name="historico" />
       <Tabs.Screen name="avisos" />
     </Tabs>
   );

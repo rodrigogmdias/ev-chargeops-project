@@ -63,7 +63,7 @@ export default function Login() {
             <Button variant="outline" size="lg" block icon="chrome" onPress={() => router.push('/verificacao')}>
               Continuar com Google
             </Button>
-            <Button variant="outline" size="lg" block icon="apple" onPress={() => router.push('/verificacao')}>
+            <Button variant="outline" size="lg" block onPress={() => router.push('/verificacao')}>
               Continuar com Apple
             </Button>
           </Animated.View>

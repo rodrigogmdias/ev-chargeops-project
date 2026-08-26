@@ -9,6 +9,7 @@ import InfoBanner from '../src/components/InfoBanner';
 import ListRow from '../src/components/ListRow';
 import MetricTile from '../src/components/MetricTile';
 import Press from '../src/components/Press';
+import LimiteRecarga from '../src/components/LimiteRecarga';
 import { Card, SectionTitle, Hairline } from '../src/components/Card';
 import { colors, fonts, radius, motion, fmt } from '../src/theme/tokens';
 import { useApp } from '../src/state/AppState';
@@ -46,7 +47,7 @@ function CartaoRow({ c, on, onPress }) {
 export default function Pagamento() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { ponto: p, cartoes, cartaoId, setCartaoId, iniciarLiberacao } = useApp();
+  const { ponto: p, cartoes, cartaoId, setCartaoId, iniciarLiberacao, preAut } = useApp();
   const grupoA = p.regime === 'A';
 
   const autorizar = () => {
@@ -69,11 +70,16 @@ export default function Pagamento() {
         </Animated.View>
 
         <Animated.View entering={enter(1)} style={{ gap: 10 }}>
+          <SectionTitle>Limite da recarga</SectionTitle>
+          <LimiteRecarga />
+        </Animated.View>
+
+        <Animated.View entering={enter(2)} style={{ gap: 10 }}>
           <SectionTitle>Pré-autorização</SectionTitle>
           <Card>
             <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' }}>
               <Text style={styles.blockLabel}>Bloqueio no cartão</Text>
-              <MetricTile value={fmt(p.preAut)} unit="R$" size="md" />
+              <MetricTile value={fmt(preAut)} unit="R$" size="md" />
             </View>
             <Hairline style={{ marginVertical: 14 }} />
             <View style={{ gap: 8 }}>
@@ -84,13 +90,13 @@ export default function Pagamento() {
           </Card>
         </Animated.View>
 
-        <Animated.View entering={enter(2)}>
+        <Animated.View entering={enter(3)}>
           <InfoBanner tone="info" title="Cartão tokenizado">
             Os dados do cartão ficam com o Stripe. O bloqueio é liberado se a recarga não iniciar.
           </InfoBanner>
         </Animated.View>
 
-        <Animated.View entering={enter(3)}>
+        <Animated.View entering={enter(4)}>
           <Card padding={0}>
             <ListRow icon="shield-check" label="Autenticação do banco" value="3-D Secure" />
             <ListRow icon="file-text" label="Regras da sessão" hint="Tolerância de 10 min · taxa de ocupação" chevron divider={false} onPress={() => {}} />
@@ -100,7 +106,7 @@ export default function Pagamento() {
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
         <Button variant="primary" size="lg" block haptic icon="lock" onPress={autorizar}>
-          {`Autorizar R$ ${fmt(p.preAut)} e liberar`}
+          {`Autorizar R$ ${fmt(preAut)} e liberar`}
         </Button>
         <Text style={styles.footnote}>Você só é cobrado pelo que consumir. A diferença do bloqueio volta ao limite do cartão.</Text>
       </View>

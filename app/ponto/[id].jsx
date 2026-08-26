@@ -28,9 +28,11 @@ export default function Ponto() {
   const p = PONTOS.find((q) => q.id === id) || PONTOS[0];
   const grupoA = p.regime === 'A';
 
+  // Bifurcação por regime: condomínio confirma sem cartão; comercial
+  // passa pelo cartão e pela pré-autorização.
   const continuar = () => {
     setPontoId(p.id);
-    router.push('/pagamento');
+    router.push(grupoA ? '/confirmar' : '/pagamento');
   };
 
   return (
@@ -116,7 +118,7 @@ export default function Ponto() {
       <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
         {p.livre ? (
           <Button variant="primary" size="lg" block haptic icon="zap" onPress={continuar}>
-            Continuar para pagamento
+            {grupoA ? 'Continuar' : 'Continuar para pagamento'}
           </Button>
         ) : (
           <Button variant="secondary" size="lg" block icon="clock" onPress={() => setFila(true)}>
@@ -125,7 +127,7 @@ export default function Ponto() {
         )}
         <Text style={styles.footnote}>
           {grupoA
-            ? `Pré-autorização de R$ ${fmt(p.preAut)} · captura ao encerrar · sem margem na energia`
+            ? 'Sem cartão · energia a custo rateada no boleto da unidade 42'
             : `Pré-autorização de R$ ${fmt(p.preAut)} · captura ao encerrar · NFS-e automática`}
         </Text>
       </View>
