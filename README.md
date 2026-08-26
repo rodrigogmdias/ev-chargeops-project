@@ -20,38 +20,18 @@ Para que alguém fora da sua rede consiga abrir, use o túnel:
 npx expo start --tunnel
 ```
 
-> **Expo SDK 57.** O Expo Go carrega um único SDK por versão do app, então o
-> aparelho precisa do Expo Go da linha `57.x`. Desde o SDK 55 o Expo Go **não
-> está mais na App Store** (a última publicada lá foi a 54.x): para iPhone
-> físico, instale por [sign.expo.dev](https://sign.expo.dev); para Android e
-> simuladores, por [expo.dev/go](https://expo.dev/go). Com um Expo Go 54.x o
-> app mostra "Project is incompatible with this version of Expo Go".
-
-## Publicar um link (EAS Update)
-
-Para alguém abrir sem você rodar o servidor:
-
-```bash
-npx eas-cli login
-```
-
-```bash
-npx eas-cli init
-```
-
-```bash
-npx eas-cli update --branch preview --message "protótipo"
-```
-
-O `runtimeVersion` está com `policy: "sdkVersion"` — é a única forma que o Expo
-Go consegue carregar, porque update publicado com `runtimeVersion` literal só
-abre em development build.
-
-> **Limite importante:** desde 12/05/2026 o Expo Go só carrega updates que
-> pertencem a você ou a uma organização da qual a conta logada é membro. Quem
-> for testar precisa estar logado no Expo Go com uma conta adicionada à sua
-> organização no [expo.dev](https://expo.dev). Para distribuir a qualquer
-> pessoa, o caminho é `eas build` (APK no Android, TestFlight no iOS).
+> **Expo SDK 54 — escolha deliberada.** É o último SDK cujo Expo Go está na
+> App Store do iOS, então o app abre no Expo Go que qualquer iPhone consegue
+> instalar hoje. O custo dessa escolha: o EAS Update **rejeita projetos SDK
+> 54** desde 01/05/2026 (`sdkVersion 54.0.0 is not supported`), então não há
+> link `u.expo.dev` — a distribuição é pelo túnel acima, com o servidor
+> ligado. Para publicar um link permanente com cache no aparelho, o caminho é
+> subir o projeto para o SDK 57 (`expo`, `react`, `react-native` +
+> `expo install --fix`) e instalar o Expo Go 57 via
+> [sign.expo.dev](https://sign.expo.dev) (iPhone) ou
+> [expo.dev/go](https://expo.dev/go) (Android/simulador); o projeto EAS já
+> existe (`extra.eas.projectId` no `app.json`) e o `runtimeVersion` já usa
+> `policy: "sdkVersion"`, a única que o Expo Go carrega.
 
 ## Fluxos cobertos (13 telas + extras)
 

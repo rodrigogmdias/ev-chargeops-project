@@ -32,7 +32,6 @@
     },
     "plugins": [
       "expo-router",
-      "expo-status-bar",
       "expo-font",
       [
         "expo-splash-screen",
@@ -48,6 +47,16 @@
     },
     "runtimeVersion": {
       "policy": "sdkVersion"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3b0cdfae-37dc-44a2-acbb-b2b09e9331d6"
+      }
+    },
+    "owner": "rodrigogmdias",
+    "updates": {
+      "url": "https://u.expo.dev/3b0cdfae-37dc-44a2-acbb-b2b09e9331d6"
     }
   }
 }
