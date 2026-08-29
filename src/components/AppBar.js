@@ -5,7 +5,6 @@ import Icon from './Icon';
 import Press from './Press';
 import { colors, fonts, spacing } from '../theme/tokens';
 
-// DS AppBar: 56px bar; large variant carries a subtitle line.
 export default function AppBar({ title, subtitle, variant = 'default', onBack, actions, style }) {
   const router = useRouter();
   const showBack = onBack !== undefined ? !!onBack : false;

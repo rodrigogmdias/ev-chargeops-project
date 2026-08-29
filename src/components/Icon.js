@@ -2,7 +2,6 @@ import React from 'react';
 import * as Lucide from 'lucide-react-native';
 import { colors } from '../theme/tokens';
 
-// Design-system Icon: Lucide outline, 2px stroke, tinted from context.
 // Accepts the kebab-case slugs used across the design file.
 const pascal = (slug) =>
   slug.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('');

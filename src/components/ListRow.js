@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Icon from './Icon';
 import { colors, fonts, radius } from '../theme/tokens';
 
-// DS ListRow: label/value/hint rows inside a padding=0 Card, hairline dividers between.
 export default function ListRow({ icon, label, hint, value, trailing, chevron, divider = true, onPress }) {
   const body = (
     <View style={[styles.row, !divider && styles.noDivider]}>

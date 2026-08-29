@@ -104,9 +104,9 @@ export const colors = {
 
 export const spacing = {
   s1: 2, s2: 4, s3: 8, s4: 12, s5: 16, s6: 20, s7: 24, s8: 32, s9: 40, s10: 48, s11: 64,
-  gutter: 16,       // mobile screen side padding
-  cardPad: 16,      // card inner padding
-  gapCard: 12,      // between stacked cards
+  gutter: 16,
+  cardPad: 16,
+  gapCard: 12,
   tabbarHeight: 64,
   appbarHeight: 56,
   hitTarget: 44,

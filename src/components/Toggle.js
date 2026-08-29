@@ -5,12 +5,15 @@ import { colors, motion } from '../theme/tokens';
 
 const W = 46, H = 28, KNOB = 22;
 
-// DS Toggle: white knob in both themes, 200ms knob travel, no bounce.
 export default function Toggle({ checked, onChange, disabled }) {
   const t = useDerivedValue(() => withTiming(checked ? 1 : 0, { duration: motion.base, easing: motion.easeStandard }), [checked]);
 
+  // Travado nao dilui o acento: vermelho a 45% vira vinho e o knob some nele.
+  const trackOff = disabled ? colors.surfaceInset : colors.controlTrackOff;
+  const trackOn = disabled ? colors.surfaceRaised : colors.controlTrackOn;
+
   const track = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(t.value, [0, 1], [colors.controlTrackOff, colors.controlTrackOn]),
+    backgroundColor: interpolateColor(t.value, [0, 1], [trackOff, trackOn]),
   }));
   const knob = useAnimatedStyle(() => ({
     transform: [{ translateX: interpolate(t.value, [0, 1], [3, W - KNOB - 3]) }],
@@ -18,8 +21,14 @@ export default function Toggle({ checked, onChange, disabled }) {
 
   return (
     <Pressable onPress={() => !disabled && onChange && onChange(!checked)} disabled={disabled} hitSlop={8}>
-      <Animated.View style={[styles.track, track, disabled && { opacity: 0.45 }]}>
-        <Animated.View style={[styles.knob, knob]} />
+      <Animated.View style={[styles.track, track]}>
+        <Animated.View
+          style={[
+            styles.knob,
+            disabled && { backgroundColor: checked ? colors.textMuted : colors.textDisabled },
+            knob,
+          ]}
+        />
       </Animated.View>
     </Pressable>
   );

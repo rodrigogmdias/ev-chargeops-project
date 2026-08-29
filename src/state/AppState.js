@@ -90,7 +90,6 @@ export const PASSOS = [
 const AppStateContext = createContext(null);
 
 export function AppStateProvider({ children }) {
-  // Onboarding / identity
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [codigo, setCodigo] = useState('');
@@ -99,11 +98,9 @@ export function AppStateProvider({ children }) {
   const [placa, setPlaca] = useState('');
   const [consent, setConsent] = useState({ localizacao: true, marketing: false });
 
-  // Discovery
   const [pontoId, setPontoId] = useState('L1-01');
   const [filtro, setFiltro] = useState('todos');
 
-  // Payment
   const [cartaoId, setCartaoId] = useState('visa');
   const [cartoes, setCartoes] = useState(CARTOES_INICIAIS);
 
@@ -112,17 +109,14 @@ export function AppStateProvider({ children }) {
   const [limValor, setLimValor] = useState(20);
   const [limKwh, setLimKwh] = useState(10);
 
-  // Histórico
   const [mes, setMes] = useState('agosto');
 
-  // Session simulation
   // phase: idle | liberando | sessao | tolerancia | encerrada
   const [sessao, setSessao] = useState({
     phase: 'idle', passo: 0, kwh: 0, secs: 0, soc: 42, demanda: 22,
     throttling: false, tol: 600, multaSecs: 0,
   });
 
-  // Toast
   const [toast, setToast] = useState('');
 
   const timers = useRef({});

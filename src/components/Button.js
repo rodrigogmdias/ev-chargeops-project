@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Press from './Press';
 import Icon from './Icon';
 import { colors, radius, fonts } from '../theme/tokens';
@@ -11,7 +10,8 @@ const SIZES = {
   sm: { height: 36, fontSize: 13, icon: 15, px: 12 },
 };
 
-// DS Button: primary is the single red CTA (accent gradient + glow); the rest are quiet.
+// O CTA primario e chapado e sem sombra porque o ctaProps do design passa
+// background var(--accent) com boxShadow none.
 export default function Button({
   children, variant = 'primary', size = 'md', icon, block, onPress, disabled, style, haptic,
 }) {
@@ -19,9 +19,12 @@ export default function Button({
 
   const isPrimary = variant === 'primary';
   const isDanger = variant === 'danger';
+  const isFilled = isPrimary || isDanger || variant === 'secondary';
 
+  // Desabilitado abandona o vermelho: o acento e racionado para o que e
+  // acionavel, e cinza escuro sobre vermelho escuro fica ilegivel.
   const textColor = disabled
-    ? colors.textDisabled
+    ? (isFilled ? colors.textSubtle : colors.textDisabled)
     : isPrimary || isDanger
       ? colors.textOnAccent
       : variant === 'ghost'
@@ -38,21 +41,16 @@ export default function Button({
   const base = [
     styles.base,
     block && { alignSelf: 'stretch' },
-    disabled && { opacity: 0.55 },
     style,
   ];
 
-  if (isPrimary && !disabled) {
-    return (
-      <Press onPress={onPress} disabled={disabled} haptic={haptic} style={[base, styles.glow]}>
-        <LinearGradient colors={[colors.red400, colors.red600]} style={styles.fill}>
-          {inner}
-        </LinearGradient>
-      </Press>
-    );
-  }
-
-  const bg = isPrimary
+  const bg = disabled
+    ? (isFilled
+      ? { backgroundColor: colors.surfaceInset }
+      : variant === 'outline'
+        ? { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.hairline }
+        : { backgroundColor: 'transparent' })
+    : isPrimary
     ? { backgroundColor: colors.accent }
     : isDanger
       ? { backgroundColor: colors.accent }
@@ -71,10 +69,5 @@ export default function Button({
 
 const styles = StyleSheet.create({
   base: { borderRadius: radius.card, overflow: 'hidden' },
-  fill: { borderRadius: radius.card },
   inner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  glow: {
-    shadowColor: colors.accent, shadowOpacity: 0.32, shadowRadius: 14,
-    shadowOffset: { width: 0, height: 4 }, elevation: 6,
-  },
 });

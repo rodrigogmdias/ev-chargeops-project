@@ -3,8 +3,6 @@ import { View, Text, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { colors, fonts, motion } from '../theme/tokens';
 
-// DS ProgressMeter: 6px bar; segmented for battery, threshold tick for demand.
-// Fill animates 320ms ease-out per the motion tokens.
 export default function ProgressMeter({ value = 0, max = 100, tone = 'energy', segmented, threshold, caption, valueLabel }) {
   const pct = Math.max(0, Math.min(1, value / max));
   const w = useSharedValue(0);

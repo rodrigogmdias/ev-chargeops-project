@@ -4,8 +4,6 @@ import Animated, { useAnimatedStyle, withTiming, useDerivedValue, interpolateCol
 import Icon from './Icon';
 import { colors, fonts, radius, motion } from '../theme/tokens';
 
-// DS TextField: 12px radius input, label with red required asterisk,
-// border animates to strong on focus (200ms border swap).
 export default function TextField({
   label, required, placeholder = 'Por favor, insira', icon, value, onChangeText,
   secureTextEntry, keyboardType, autoCapitalize = 'none', hint, style, maxLength,
