@@ -1,0 +1,43 @@
+@import "./tokens.css";
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg-base);
+  color: var(--text-body);
+  font-family: var(--font-core);
+  font-size: 15px;
+  line-height: 22px;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--text-link); text-decoration: none; }
+a:hover { color: var(--text-link-hover); }
+button { font-family: inherit; }
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+::selection { background: var(--accent-quiet); }
+
+/* Numerais são a tipografia real deste produto: tabelas e métricas alinham. */
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* Cabeçalho de seção fica FORA do card que ele apresenta. */
+.eyebrow {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 800;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-subtle);
+  margin: 0;
+}
+
+.card {
+  background: var(--surface-card);
+  border-radius: var(--radius-card);
+  padding: var(--gutter-card);
+  box-shadow: var(--shadow-card);
+}
+.card--flush { padding: 0; }
+
+.scroll-x { overflow-x: auto; }
