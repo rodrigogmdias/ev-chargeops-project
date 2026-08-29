@@ -92,32 +92,32 @@ export default function Rateio() {
 
             {linhas.map((u) => (
               <div className="row row--body" key={u.id}>
-                <div className="cell cell--mono cell--strong">{u.unidade}</div>
-                <div className="cell cell--stack">
+                <div className="cell cell--mono cell--strong cell--titulo">{u.unidade}</div>
+                <div className="cell cell--stack cell--titulo">
                   <div className="cell__main">{u.nome}</div>
                   <div className="cell__hint">
                     {u.status === 'ativo' ? `${u.placa} · ${u.modelo}` : 'Sem veículo vinculado'}
                   </div>
                 </div>
-                <div className="cell cell--mono cell--right cell--muted">{u.sessoes || '—'}</div>
-                <div className="cell cell--mono cell--right">{u.kwh ? num(u.kwh) : '—'}</div>
-                <div className="cell cell--mono cell--right">{u.energia ? `R$ ${brl(u.energia)}` : '—'}</div>
-                <div className="cell cell--mono cell--right cell--muted">{u.taxa ? `R$ ${brl(u.taxa)}` : '—'}</div>
-                <div className={`cell cell--mono cell--right ${u.ocup ? 'cell--fault' : 'cell--null'}`}>
+                <div className="cell cell--mono cell--right cell--muted" data-label="Sessões">{u.sessoes || '—'}</div>
+                <div className="cell cell--mono cell--right" data-label="kWh">{u.kwh ? num(u.kwh) : '—'}</div>
+                <div className="cell cell--mono cell--right" data-label="Energia">{u.energia ? `R$ ${brl(u.energia)}` : '—'}</div>
+                <div className="cell cell--mono cell--right cell--muted" data-label="Acesso">{u.taxa ? `R$ ${brl(u.taxa)}` : '—'}</div>
+                <div className={`cell cell--mono cell--right ${u.ocup ? 'cell--fault' : 'cell--null'}`} data-label="Ocupação">
                   {u.ocup ? `R$ ${brl(u.ocup)}` : '—'}
                 </div>
-                <div className="cell cell--mono cell--right cell--strong">R$ {brl(u.total)}</div>
+                <div className="cell cell--mono cell--right cell--strong cell--totalLinha" data-label="Total">R$ {brl(u.total)}</div>
               </div>
             ))}
 
             <div className="row row--total">
-              <div className="th th--span2">Total a ratear</div>
-              <div className="cell cell--mono cell--right cell--muted cell--strong">{totais.sessoes}</div>
-              <div className="cell cell--mono cell--right cell--strong">{num(totais.kwh, 1)}</div>
-              <div className="cell cell--mono cell--right cell--strong">R$ {brl(totais.energia)}</div>
-              <div className="cell cell--mono cell--right cell--strong">R$ {brl(totais.acesso)}</div>
-              <div className="cell cell--mono cell--right cell--strong cell--fault">R$ {brl(totais.ocupacao)}</div>
-              <div className="cell cell--mono cell--right cell--total">R$ {brl(totais.geral)}</div>
+              <div className="th th--span2 cell--titulo">Total a ratear</div>
+              <div className="cell cell--mono cell--right cell--muted cell--strong" data-label="Sessões">{totais.sessoes}</div>
+              <div className="cell cell--mono cell--right cell--strong" data-label="kWh">{num(totais.kwh, 1)}</div>
+              <div className="cell cell--mono cell--right cell--strong" data-label="Energia">R$ {brl(totais.energia)}</div>
+              <div className="cell cell--mono cell--right cell--strong" data-label="Acesso">R$ {brl(totais.acesso)}</div>
+              <div className="cell cell--mono cell--right cell--strong cell--fault" data-label="Ocupação">R$ {brl(totais.ocupacao)}</div>
+              <div className="cell cell--mono cell--right cell--total" data-label="Total">R$ {brl(totais.geral)}</div>
             </div>
           </div>
         </div>
