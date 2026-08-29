@@ -45,3 +45,12 @@
 .drawer__foot { display: flex; gap: var(--space-4); margin-top: auto; }
 .drawer__foot .btn { height: 52px; font-size: 16px; flex: 1; }
 .drawer__foot .btn--primary { flex: 1.4; }
+
+@media (max-width: 900px) {
+  .drawer__panel { width: 100%; padding: var(--space-6) var(--space-5); }
+  /* 32px é apertado para o dedo; o mínimo confortável é 44. */
+  .drawer__close { width: 44px; height: 44px; flex-basis: 44px; }
+  .drawer__pair { grid-template-columns: 1fr; }
+  .campo__control { height: 48px; font-size: 16px; }
+  .drawer__foot { position: sticky; bottom: 0; background: var(--surface-sheet); padding-top: var(--space-4); }
+}

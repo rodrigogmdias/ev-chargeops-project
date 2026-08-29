@@ -153,3 +153,109 @@
 .pontoCard__linha { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .pontoCard__label { font-size: 13px; font-weight: 500; color: var(--text-subtle); }
 .pontoCard__valor { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--text-body); }
+
+/* ════════════════════════════════════════════════════════════════
+   Mobile: as tabelas viram cartões empilhados.
+   Rolar 1040px na horizontal é inviável no celular, então cada linha
+   passa a ser um cartão e cada célula ganha seu rótulo pelo data-label.
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .tableWrap { overflow-x: visible; }
+  .tableMin--rateio,
+  .tableMin--moradores,
+  .tableMin--sessoes { min-width: 0; }
+
+  /* Sem colunas, o cabeçalho perde a função. */
+  .row--head { display: none; }
+
+  .row--body,
+  .row--total {
+    display: flex; flex-direction: column; gap: var(--space-2);
+    /* Sem isto, o align-items:center do layout de colunas encolhe
+       as células e centraliza tudo em vez de ocupar a largura. */
+    align-items: stretch;
+    padding: var(--space-5);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .row--body:hover { background: none; }
+
+  /* Célula comum: rótulo à esquerda, valor à direita. */
+  .row--body .cell,
+  .row--total .cell {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: var(--space-4); text-align: left; min-height: 24px;
+  }
+  .row--body .cell::before,
+  .row--total .cell::before {
+    content: attr(data-label);
+    font-size: 11px; font-weight: 800; letter-spacing: 0.9px;
+    text-transform: uppercase; color: var(--text-subtle);
+    flex: none;
+  }
+  .row--body .cell:not([data-label])::before,
+  .row--total .cell:not([data-label])::before { content: none; }
+
+  /* As duas primeiras células viram o cabeçalho do cartão. */
+  .cell--titulo { display: block !important; }
+  .cell--titulo::before { content: none !important; }
+  .row--body .cell--titulo:first-child,
+  .row--total .cell--titulo:first-child {
+    font-size: 15px; margin-bottom: var(--space-1);
+  }
+  .cell--stack.cell--titulo { margin-bottom: var(--space-3); }
+  .cell--stack.cell--titulo .cell__main,
+  .cell--stack.cell--titulo .cell__hint { white-space: normal; }
+
+  /* Contato e veículo já são blocos de duas linhas; forçá-los na mesma
+     linha do rótulo estouraria a largura com e-mails longos. Ficam como
+     bloco, com o rótulo acima. */
+  .row--body .cell--stack:not(.cell--titulo) {
+    flex-direction: column; align-items: flex-start; gap: 1px;
+    padding-top: var(--space-2);
+  }
+  .row--body .cell--stack:not(.cell--titulo)::before { margin-bottom: 2px; }
+  .row--body .cell--stack:not(.cell--titulo) > div { text-align: left; }
+
+  /* O chevron não leva a lugar nenhum no protótipo e vira ruído no cartão. */
+  .rowAction { display: none; }
+
+  .cell--right { text-align: right; }
+  .cell--totalLinha,
+  .cell--total {
+    margin-top: var(--space-2); padding-top: var(--space-3);
+    border-top: 1px solid var(--hairline);
+  }
+  .cell--totalLinha::before,
+  .cell--total::before { color: var(--text-muted); }
+
+  .row--total { background: rgba(255, 255, 255, 0.03); }
+  .th--span2 {
+    font-size: 13px; color: var(--text-title); font-weight: 800;
+    margin-bottom: var(--space-2);
+  }
+
+  /* Cabeçalho da tabela: busca e filtros empilham. */
+  .tableHead { flex-direction: column; align-items: stretch; gap: var(--space-4); }
+  .tableHead__right { flex-direction: column; align-items: stretch; }
+  .busca { height: 44px; }
+  .busca__input { width: 100% !important; }
+  .filtros { overflow-x: auto; padding-bottom: 2px; flex-wrap: nowrap; }
+  .filtro { height: 40px; flex: none; }
+
+  /* Ações do título viram largura total, evitando texto quebrado no botão. */
+  .pagetitle { flex-direction: column; align-items: stretch; }
+  .pagetitle__actions { flex-direction: column; align-items: stretch; }
+  .pagetitle__actions .btn { width: 100%; }
+
+  .capacity { grid-template-columns: 1fr; }
+  .capKpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 560px) {
+  .kpi__value { font-size: 21px; line-height: 26px; }
+  .chart { height: 132px; }
+  .csvCard__sample { font-size: 10.5px; }
+  .capKpis { grid-template-columns: minmax(0, 1fr); }
+  .topRow { flex-wrap: wrap; gap: var(--space-2) var(--space-3); }
+  .topRow__nome { flex: 1 1 100%; order: 3; }
+}

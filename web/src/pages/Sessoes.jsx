@@ -21,13 +21,13 @@ export default function Sessoes() {
             </div>
             {SESSOES.map((s) => (
               <div className="row row--body" key={s.id}>
-                <div className="cell cell--mono cell--id">{s.id}</div>
-                <div className="cell cell--mono cell--strong">{s.unidade}</div>
-                <div className="cell cell__main">{s.ponto}</div>
-                <div className="cell cell--mono cell--muted">{s.quando}</div>
-                <div className="cell cell--mono cell--right">{num(s.kwh)}</div>
-                <div className="cell cell--mono cell--right cell--strong">R$ {brl(s.kwh * TARIFA)}</div>
-                <div className="cell"><Pill tom={s.tom}>{s.status}</Pill></div>
+                <div className="cell cell--mono cell--id cell--titulo">{s.id}</div>
+                <div className="cell cell--mono cell--strong" data-label="Unidade">{s.unidade}</div>
+                <div className="cell cell__main" data-label="Ponto">{s.ponto}</div>
+                <div className="cell cell--mono cell--muted" data-label="Quando">{s.quando}</div>
+                <div className="cell cell--mono cell--right" data-label="kWh">{num(s.kwh)}</div>
+                <div className="cell cell--mono cell--right cell--strong" data-label="Valor">R$ {brl(s.kwh * TARIFA)}</div>
+                <div className="cell" data-label="Status"><Pill tom={s.tom}>{s.status}</Pill></div>
               </div>
             ))}
           </div>

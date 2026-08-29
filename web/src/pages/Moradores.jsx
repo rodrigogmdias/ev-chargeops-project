@@ -66,20 +66,20 @@ export default function Moradores() {
 
             {linhas.map((u) => (
               <div className="row row--body" key={u.id}>
-                <div className="cell cell--mono cell--strong">{u.unidade}</div>
-                <div className="cell cell--stack">
+                <div className="cell cell--mono cell--strong cell--titulo">{u.unidade}</div>
+                <div className="cell cell--stack cell--titulo">
                   <div className="cell__main">{u.nome}</div>
                   <div className="cell__hint cell__hint--mono">{u.cpf}</div>
                 </div>
-                <div className="cell cell--stack">
+                <div className="cell cell--stack" data-label="Contato">
                   <div className="cell__main cell__main--muted">{u.email}</div>
                   <div className="cell__hint cell__hint--mono">{u.telefone}</div>
                 </div>
-                <div className="cell cell--stack">
+                <div className="cell cell--stack" data-label="Veículo">
                   <div className="cell__main cell__main--mono">{u.placa}</div>
                   <div className="cell__hint">{u.modelo}</div>
                 </div>
-                <div className="cell"><Pill tom={STATUS_TOM[u.status]}>{STATUS_LABEL[u.status]}</Pill></div>
+                <div className="cell" data-label="Status"><Pill tom={STATUS_TOM[u.status]}>{STATUS_LABEL[u.status]}</Pill></div>
                 <button type="button" className="rowAction" aria-label={`Abrir unidade ${u.unidade}`}>
                   <ChevronRight size={16} strokeWidth={2} />
                 </button>
