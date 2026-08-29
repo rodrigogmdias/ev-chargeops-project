@@ -1,0 +1,47 @@
+.drawer { position: fixed; inset: 0; z-index: 20; display: flex; justify-content: flex-end; background: var(--surface-scrim); }
+.drawer__scrim { flex: 1; border: 0; background: transparent; cursor: default; }
+.drawer__panel {
+  width: 460px; max-width: 100%; height: 100%; overflow-y: auto;
+  background: var(--surface-sheet); border-left: 1px solid var(--border-subtle);
+  padding: var(--space-7); display: flex; flex-direction: column; gap: var(--space-6);
+  animation: drawerIn var(--duration-slow) var(--ease-sheet) both;
+}
+@keyframes drawerIn { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.drawer__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-5); }
+.drawer__title { font-size: 19px; line-height: 26px; font-weight: 700; color: var(--text-title); }
+.drawer__sub { margin: 4px 0 0; font-size: 13px; line-height: 19px; font-weight: 500; color: var(--text-subtle); }
+.drawer__close {
+  width: 32px; height: 32px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  border: 0; border-radius: var(--radius-input);
+  background: var(--surface-inset); color: var(--text-body); cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+.drawer__close:hover { background: var(--surface-raised); }
+
+.drawer__pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.campo { display: flex; flex-direction: column; gap: 6px; }
+.campo__label { font-size: 13px; font-weight: 700; color: var(--text-body); }
+.campo__control {
+  height: 44px; padding: 0 var(--space-4);
+  background: var(--surface-inset); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-input); color: var(--text-title);
+  font-family: inherit; font-size: 14px; font-weight: 600; outline: none;
+  transition: border-color var(--duration-base) var(--ease-standard);
+}
+.campo__control:focus { border-color: var(--border-strong); }
+.campo__hint { font-size: 12px; font-weight: 500; color: var(--text-subtle); }
+
+.drawer__listHead { padding: 12px 14px; }
+.drawer__listRow {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; border-top: 1px solid var(--hairline);
+}
+.drawer__listIcon { color: var(--text-disabled); flex: none; }
+.drawer__listLabel { flex: 1; font-size: 13.5px; font-weight: 600; color: var(--text-muted); }
+.drawer__listHint { font-size: 12px; font-weight: 500; color: var(--text-subtle); }
+
+.drawer__foot { display: flex; gap: var(--space-4); margin-top: auto; }
+.drawer__foot .btn { height: 52px; font-size: 16px; flex: 1; }
+.drawer__foot .btn--primary { flex: 1.4; }

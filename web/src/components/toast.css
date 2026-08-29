@@ -1,0 +1,10 @@
+.toast {
+  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%);
+  z-index: 30; display: flex; align-items: center; gap: 10px;
+  background: var(--surface-raised); border-radius: var(--radius-card);
+  padding: 12px var(--gutter-card); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  animation: toastIn var(--duration-base) var(--ease-sheet) both;
+}
+@keyframes toastIn { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.toast__icon { color: var(--status-charging); flex: none; }
+.toast__text { font-size: 14px; font-weight: 600; color: var(--text-title); }

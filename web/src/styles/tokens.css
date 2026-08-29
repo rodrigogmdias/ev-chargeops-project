@@ -1,0 +1,139 @@
+/* Tokens do design system EV ChargeOps.
+   Portados do _ds/ev-chargeops-design-system: cores, tipografia, espaçamento,
+   raios, elevação e motion. Dark-first — o produto é escuro por padrão. */
+
+@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300..900;1,300..900&family=JetBrains+Mono:wght@400;500;700&display=swap");
+
+:root {
+  color-scheme: dark;
+
+  /* ── Neutros ── */
+  --neutral-1000:#000000;
+  --neutral-950:#0B0B0D;
+  --neutral-900:#121214;
+  --neutral-850:#17171A;
+  --neutral-800:#1C1C1F;
+  --neutral-750:#212125;
+  --neutral-700:#26262A;
+  --neutral-600:#303036;
+  --neutral-500:#3D3D44;
+  --neutral-400:#57575E;
+  --neutral-300:#7C7C84;
+  --neutral-200:#B4B4BA;
+  --neutral-100:#DEDEE2;
+  --neutral-0:#FFFFFF;
+
+  /* ── Vermelho da marca ── */
+  --red-700:#9E0014;
+  --red-600:#C10015;
+  --red-500:#E8121F;
+  --red-400:#FF3B45;
+  --red-300:#FF7A80;
+  --red-tint:rgba(232,18,31,.14);
+
+  /* ── Hues de status ── */
+  --green-500:#26D07C;
+  --green-400:#4FE09B;
+  --green-tint:rgba(38,208,124,.14);
+  --amber-500:#F5A623;
+  --amber-tint:rgba(245,166,35,.14);
+  --blue-500:#4A90E2;
+  --blue-400:#6BA9EE;
+  --blue-tint:rgba(74,144,226,.16);
+  --violet-500:#8E7BE8;
+
+  /* ── Superfícies ── */
+  --bg-base:var(--neutral-950);
+  --bg-canvas:var(--neutral-900);
+  --surface-card:var(--neutral-800);
+  --surface-inset:var(--neutral-700);
+  --surface-raised:var(--neutral-600);
+  --surface-nav:rgba(18,18,20,.86);
+  --surface-sheet:var(--neutral-850);
+  --surface-scrim:rgba(0,0,0,.62);
+
+  /* ── Texto ── */
+  --text-title:var(--neutral-0);
+  --text-body:var(--neutral-100);
+  --text-muted:var(--neutral-200);
+  --text-subtle:var(--neutral-300);
+  --text-disabled:var(--neutral-400);
+  --text-onaccent:var(--neutral-0);
+  --text-link:var(--red-400);
+  --text-link-hover:var(--red-300);
+
+  /* ── Linhas ── */
+  --hairline:rgba(255,255,255,.07);
+  --border-subtle:rgba(255,255,255,.12);
+  --border-strong:rgba(255,255,255,.26);
+  --border-dashed:rgba(255,255,255,.18);
+  --focus-ring:rgba(232,18,31,.55);
+
+  /* ── Acento ── */
+  --accent:var(--red-500);
+  --accent-hover:var(--red-400);
+  --accent-press:var(--red-600);
+  --accent-quiet:var(--red-tint);
+  --accent-onquiet:var(--red-400);
+  --border-danger:rgba(232,18,31,.40);
+
+  /* ── Status do domínio ── */
+  --status-charging:var(--green-500);
+  --status-charging-bg:var(--green-tint);
+  --status-idle:var(--amber-500);
+  --status-idle-bg:var(--amber-tint);
+  --status-fault:var(--red-400);
+  --status-fault-bg:var(--red-tint);
+  --status-info:var(--blue-500);
+  --status-info-bg:var(--blue-tint);
+  --status-offline:var(--neutral-300);
+  --status-offline-bg:rgba(255,255,255,.08);
+
+  /* ── Medidores ── */
+  --meter-track:rgba(255,255,255,.10);
+  --meter-energy:var(--green-500);
+  --meter-demand:var(--amber-500);
+  --meter-over:var(--red-400);
+  --chart-bar:var(--surface-raised);
+
+  /* ── Tipografia ── */
+  --font-core:"Nunito","Nunito Sans",system-ui,-apple-system,sans-serif;
+  --font-display:"Nunito","Nunito Sans",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,monospace;
+  --tracking-caps:0.08em;
+
+  /* ── Espaçamento e layout ── */
+  --space-1:2px;  --space-2:4px;  --space-3:8px;  --space-4:12px;
+  --space-5:16px; --space-6:20px; --space-7:24px; --space-8:32px;
+  --space-9:40px; --space-10:48px; --space-11:64px;
+  --gutter-card:16px;
+  --gap-card:12px;
+  --portal-sidebar:248px;
+  --portal-gutter:32px;
+  --portal-max:1440px;
+
+  /* ── Raios ── */
+  --radius-xs:4px; --radius-sm:8px; --radius-md:12px; --radius-lg:16px;
+  --radius-xl:20px; --radius-2xl:24px; --radius-pill:999px;
+  --radius-card:16px;
+  --radius-tile:14px;
+  --radius-input:12px;
+
+  /* ── Elevação ── */
+  --shadow-card:none;
+  --shadow-popover:0 12px 32px rgba(0,0,0,.5);
+  --shadow-sheet:0 -12px 40px rgba(0,0,0,.55);
+  --wash-top:radial-gradient(120% 80% at 50% -20%,rgba(255,255,255,.06) 0%,transparent 70%);
+  --wash-accent:radial-gradient(90% 70% at 80% 0%,rgba(232,18,31,.12) 0%,transparent 65%);
+
+  /* ── Motion: curto e plano, sem bounce ── */
+  --duration-instant:80ms;
+  --duration-fast:140ms;
+  --duration-base:200ms;
+  --duration-slow:320ms;
+  --ease-standard:cubic-bezier(.2,0,.2,1);
+  --ease-out:cubic-bezier(0,0,.2,1);
+  --ease-sheet:cubic-bezier(.16,1,.3,1);
+  --press-scale:0.97;
+  --hover-lift:rgba(255,255,255,.05);
+}
