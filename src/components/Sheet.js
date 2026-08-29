@@ -9,8 +9,6 @@ import { colors, radius, motion } from '../theme/tokens';
 
 const { height: SCREEN_H } = Dimensions.get('window');
 
-// DS BottomSheet: 20px top corners, flat 62% black scrim, 280ms decelerating
-// slide (--ease-sheet). Drag down to dismiss.
 export default function Sheet({ visible, onClose, children }) {
   const [mounted, setMounted] = useState(visible);
   const ty = useSharedValue(SCREEN_H);

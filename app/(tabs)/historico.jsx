@@ -24,7 +24,6 @@ const MESES = [
 
 const TOM_PILL = { charging: 'charging', idle: 'idle', fault: 'fault' };
 
-// Barra do gráfico semanal — altura anima 320ms ease-out ao trocar o mês.
 function Barra({ v, label }) {
   const h = useSharedValue(0);
   const alvo = Math.round((v / 24) * 68);
@@ -41,8 +40,6 @@ function Barra({ v, label }) {
   );
 }
 
-// 14 · Histórico: fechamento do mês por unidade — consumo, ocupação,
-// taxa de acesso e a lista de sessões que compõem o boleto.
 export default function Historico() {
   const router = useRouter();
   const insets = useSafeAreaInsets();

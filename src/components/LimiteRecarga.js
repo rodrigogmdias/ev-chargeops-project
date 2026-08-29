@@ -16,8 +16,6 @@ const MODOS = [
   { value: 'energia', label: 'Por energia' },
 ];
 
-// Card "Limite da recarga": sem limite ("Até encher") ou ajustável por
-// R$ / kWh com slider e presets. O equivalente na outra unidade acompanha.
 export default function LimiteRecarga() {
   const {
     ponto: p, limModo, setLimModo, limValor, setLimValor, limKwh, setLimKwh,

@@ -6,7 +6,6 @@ import { motion } from '../theme/tokens';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-// Press feedback per the DS: scale to 0.97, 140ms, no colour change.
 export default function Press({ children, style, onPress, disabled, haptic = false, scaleTo = motion.pressScale, ...rest }) {
   const scale = useSharedValue(1);
 

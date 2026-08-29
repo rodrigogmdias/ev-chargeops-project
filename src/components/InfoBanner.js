@@ -10,7 +10,6 @@ const TONES = {
   danger: { color: colors.statusFault, bg: colors.statusFaultBg, icon: 'triangle-alert' },
 };
 
-// DS InfoBanner: tinted panel, hue glyph, title + one-sentence body.
 export default function InfoBanner({ tone = 'info', title, children, style }) {
   const t = TONES[tone] || TONES.info;
   return (

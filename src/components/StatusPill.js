@@ -12,7 +12,6 @@ const STATUS = {
   offline: { color: colors.statusOffline, bg: colors.statusOfflineBg, icon: 'plug' },
 };
 
-// DS StatusPill: solid hue on a 14% tint of itself, 13px glyph, full pill.
 export default function StatusPill({ status = 'info', icon, children, style }) {
   const s = STATUS[status] || STATUS.info;
   return (

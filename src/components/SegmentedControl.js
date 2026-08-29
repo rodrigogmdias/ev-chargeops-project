@@ -4,8 +4,6 @@ import Animated, { useAnimatedStyle, withTiming, useDerivedValue } from 'react-n
 import * as Haptics from 'expo-haptics';
 import { colors, fonts, radius, motion } from '../theme/tokens';
 
-// DS SegmentedControl: pill track with an indicator that slides between options.
-// Motion follows the token rules — 200ms, standard easing, no overshoot.
 export default function SegmentedControl({ options, value, onChange, style }) {
   const [w, setW] = useState(0);
   const index = Math.max(0, options.findIndex((o) => o.value === value));

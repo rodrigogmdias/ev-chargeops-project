@@ -5,12 +5,10 @@ import { colors, motion } from '../theme/tokens';
 
 const W = 46, H = 28, KNOB = 22;
 
-// DS Toggle: white knob in both themes, 200ms knob travel, no bounce.
 export default function Toggle({ checked, onChange, disabled }) {
   const t = useDerivedValue(() => withTiming(checked ? 1 : 0, { duration: motion.base, easing: motion.easeStandard }), [checked]);
 
-  // Travado nao dilui o acento: um vermelho a 45% vira vinho e o knob some
-  // nele. O estado bloqueado vira superficie neutra, mantendo o knob legivel.
+  // Travado nao dilui o acento: vermelho a 45% vira vinho e o knob some nele.
   const trackOff = disabled ? colors.surfaceInset : colors.controlTrackOff;
   const trackOn = disabled ? colors.surfaceRaised : colors.controlTrackOn;
 

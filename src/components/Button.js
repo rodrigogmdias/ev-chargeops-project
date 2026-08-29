@@ -10,8 +10,8 @@ const SIZES = {
   sm: { height: 36, fontSize: 13, icon: 15, px: 12 },
 };
 
-// DS Button: primary e o unico CTA vermelho, chapado em --accent e sem sombra
-// (o ctaProps do design passa background var(--accent) + boxShadow none).
+// O CTA primario e chapado e sem sombra porque o ctaProps do design passa
+// background var(--accent) com boxShadow none.
 export default function Button({
   children, variant = 'primary', size = 'md', icon, block, onPress, disabled, style, haptic,
 }) {
@@ -22,8 +22,7 @@ export default function Button({
   const isFilled = isPrimary || isDanger || variant === 'secondary';
 
   // Desabilitado abandona o vermelho: o acento e racionado para o que e
-  // acionavel. Sobre a superficie neutra o rotulo usa --text-subtle, que
-  // le como inativo sem virar cinza-sobre-vinho.
+  // acionavel, e cinza escuro sobre vermelho escuro fica ilegivel.
   const textColor = disabled
     ? (isFilled ? colors.textSubtle : colors.textDisabled)
     : isPrimary || isDanger

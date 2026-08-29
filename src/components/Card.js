@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, radius, spacing, type } from '../theme/tokens';
 
-// DS Card: --surface-card fill, 16px radius, no border, no shadow, 16px padding.
 export function Card({ children, padding = spacing.cardPad, style }) {
   return <View style={[styles.card, { padding }, style]}>{children}</View>;
 }

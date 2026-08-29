@@ -9,8 +9,7 @@ const SIZES = {
   sm: { value: 20, lh: 24 },
 };
 
-// DS MetricTile: value+unit are always a pair — big bold numeral, small muted unit,
-// caption label beneath. Never bake the unit into the value string.
+// Never bake the unit into the value string: value and unit are always a pair.
 export default function MetricTile({ value, unit, label, size = 'md', tone = 'default', style }) {
   const s = SIZES[size] || SIZES.md;
   const valueColor =
