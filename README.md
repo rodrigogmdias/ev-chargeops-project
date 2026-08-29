@@ -19,16 +19,27 @@ no README de cada uma.
 
 Ambas as superfícies estão no ar numa VPS, sem depender de máquina local:
 
-| | |
-|---|---|
-| Portal | https://evchargeops.softmoon.io |
-| App | `exp://evchargeops.softmoon.io:8081` — abre no Expo Go 54.x |
+| | Link | QR |
+|---|---|---|
+| **Portal** | https://evchargeops.softmoon.io | <img src="infra/qrcodes/portal-claro.png" width="150" alt="QR do portal"> |
+| **App** | `exp://evchargeops.softmoon.io:8081` | <img src="infra/qrcodes/app-claro.png" width="150" alt="QR do app"> |
 
-Detalhes de infraestrutura e como atualizar em [`infra/`](infra/).
+O portal abre em qualquer navegador. O app exige o **Expo Go 54.x** no aparelho —
+no iPhone, instale por [sign.expo.dev](https://sign.expo.dev), já que a App Store
+parou de distribuir o Expo Go depois do SDK 54.
+
+O QR do app usa o esquema `exp://`: a câmera do iPhone reconhece e oferece abrir
+no Expo Go, mas leitores genéricos de QR podem recusar um esquema que não
+conhecem. Se acontecer, use "Enter URL manually" dentro do Expo Go.
+
+Outras variantes dos QR codes (escura para slide, SVG vetorial) e os detalhes de
+infraestrutura estão em [`infra/`](infra/).
 
 ## Estado
 
 - **`mobile/`** — protótipo navegável completo: 15 telas cobrindo entrada,
   consentimento LGPD, descoberta no mapa, limite de recarga, sessão ao vivo,
   tolerância e multa, recibo e histórico. Veja [`mobile/README.md`](mobile/README.md).
-- **`web/`** — a construir.
+- **`web/`** — portal implementado a partir do design `Portal do Condominio.dc.html`:
+  7 telas cobrindo visão geral, rateio com exportação CSV, cadastro de moradores,
+  pontos e capacidade, regras, sessões e configurações. Veja [`web/README.md`](web/README.md).
