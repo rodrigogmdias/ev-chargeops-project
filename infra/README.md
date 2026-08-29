@@ -58,3 +58,18 @@ app. Para uma demo pública isso é aceitável; para distribuição de verdade o
 caminho é EAS Update (exige SDK ≥ 57) ou um build interno.
 
 O firewall (ufw) libera apenas 22, 80, 443 e 8081.
+
+## QR codes
+
+Em [`infra/qrcodes/`](qrcodes/), gerados com `segno` (correção de erro alta) e
+validados módulo a módulo contra a codificação esperada:
+
+| Arquivo | Uso |
+|---|---|
+| `portal-claro.png` · `app-claro.png` | Impressão e fundo branco |
+| `portal-escuro.png` · `app-escuro.png` | Slide com o fundo escuro do produto |
+| `portal.svg` · `app.svg` | Vetorial, para ampliar sem perda |
+
+O QR do app aponta para `exp://`, um esquema customizado: a câmera do iPhone
+reconhece e oferece abrir no Expo Go, mas leitores de QR genéricos podem
+recusar. Se acontecer, use "Enter URL manually" dentro do Expo Go.
