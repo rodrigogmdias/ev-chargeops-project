@@ -1,131 +1,136 @@
-import { Card, SectionTitle, Metric, StatusPill, Meter, InfoBanner } from '../components/Primitives';
+import { useNavigate } from 'react-router-dom';
+import { TriangleAlert, CircleCheck, CircleDashed } from 'lucide-react';
+import { Card, Kpi, Dot, Button } from '../components/ui';
+import { usePortal } from '../state/PortalState';
 import {
-  PONTOS, DEMANDA_SERIE, DEMANDA_CONTRATADA, THROTTLING, RATEIO,
-  TARIFA, fmt, custoEnergia,
-} from '../data/condominio';
+  BARRAS, MAX_BARRA, PONTOS_RESUMO, DEMANDA_AGORA, LIMITE_CONTRATADO,
+  TARIFA, TAXA_ACESSO, MES_REFERENCIA, brl, num,
+} from '../data/portal';
 import './pages.css';
 
-const ESTADO = {
-  carregando: { pill: 'charging', label: 'Carregando' },
-  livre: { pill: 'available', label: 'Livre' },
-  ocioso: { pill: 'idle', label: 'Ocioso' },
-  falha: { pill: 'fault', label: 'Falha' },
-};
-
 export default function VisaoGeral() {
-  // A leitura mais recente da série; bate com os pontos carregando × 7 kW.
-  const demandaAgora = DEMANDA_SERIE[DEMANDA_SERIE.length - 1];
-  const pico = Math.max(...DEMANDA_SERIE);
-  const kwhMes = RATEIO.reduce((a, r) => a + r.kwh, 0);
-  const carregando = PONTOS.filter((p) => p.estado === 'carregando').length;
-  const emFalha = PONTOS.filter((p) => p.estado === 'falha').length;
+  const { unidades, totais } = usePortal();
+  const navigate = useNavigate();
+
+  const top = [...unidades].sort((a, b) => b.total - a.total).slice(0, 5);
+  const media = totais.kwh / Math.max(1, totais.comConsumo);
+
+  const checklist = [
+    { label: 'Medição fechada', hint: 'Nenhuma sessão aberta nos últimos 3 dias', feito: true },
+    { label: 'Tarifa e taxas confirmadas', hint: `R$ ${brl(TARIFA)} por kWh · R$ ${brl(TAXA_ACESSO)} de acesso`, feito: true },
+    { label: 'CSV enviado à administradora', hint: 'Pendente · até 01/09', feito: false },
+  ];
 
   return (
     <div className="stack">
-      <header className="page-head">
-        <div className="page-head__row">
-          <div>
-            <h1 className="page-head__title">Visão geral</h1>
-            <p className="page-head__sub">Agosto de 2026 · leitura em tempo real do SEMS</p>
-          </div>
-        </div>
-      </header>
+      <div className="grid4">
+        <Kpi eyebrow="Energia do mês" value={num(totais.kwh, 1)} unit="kWh" hint="Medição consolidada dos 3 pontos" />
+        <Kpi eyebrow="Valor a ratear" value={`R$ ${brl(totais.geral)}`} hint="Energia, taxa de acesso e ocupação" />
+        <Kpi eyebrow="Unidades com consumo" value={String(totais.comConsumo)} unit="de 40"
+          hint={`Média de ${num(media, 1)} kWh por unidade`} />
+        <Kpi eyebrow="Taxa de ocupação" value={`R$ ${brl(totais.ocupacao)}`} tone="demand"
+          hint="Veículos parados após a tolerância" />
+      </div>
 
-      <div className="grid grid--4">
-        <Card><Metric size="lg" value={fmt(kwhMes)} unit="kWh" label="Consumo do mês" /></Card>
-        <Card><Metric size="lg" value={fmt(custoEnergia(kwhMes))} unit="R$" label="Energia a repassar" /></Card>
-        <Card><Metric size="lg" value={`${carregando} / ${PONTOS.length}`} label="Pontos carregando" /></Card>
-        <Card>
-          <Metric size="lg" value={String(pico)} unit="kW" label="Pico de demanda" tone={pico > DEMANDA_CONTRATADA ? 'fault' : 'default'} />
+      <div className="gridVisao">
+        <Card className="chartCard">
+          <div className="cardHead">
+            <div className="cardHead__title">Consumo por semana · agosto</div>
+            <div className="cardHead__hint">kWh medidos nos 3 pontos do condomínio</div>
+          </div>
+          <div className="chart">
+            {BARRAS.map(([semana, v]) => (
+              <div className="chart__col" key={semana}>
+                <div className="chart__rotulo">{num(v, 0)}</div>
+                <div
+                  className={`chart__bar ${v === 372.8 ? 'chart__bar--pico' : ''}`}
+                  style={{ height: `${Math.round((v / MAX_BARRA) * 118)}px` }}
+                />
+                <div className="chart__semana">{semana}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="capCard">
+          <div className="cardHead__title">Capacidade elétrica agora</div>
+          <div>
+            <div className="cap__row">
+              <span className="cap__label">Demanda do prédio</span>
+              <span className="cap__valor">{num(DEMANDA_AGORA, 1)} de {LIMITE_CONTRATADO} kW</span>
+            </div>
+            <div className="meter">
+              <div className="meter__fill meter__fill--demand"
+                style={{ width: `${Math.round((DEMANDA_AGORA / LIMITE_CONTRATADO) * 100)}%` }} />
+            </div>
+            <p className="cap__nota">
+              Limite contratado de {LIMITE_CONTRATADO} kW. O balanceamento reduz a potência dos
+              pontos antes de chegar ao limite.
+            </p>
+          </div>
+          <div className="hairline" />
+          <div className="cap__pontos">
+            {PONTOS_RESUMO.map((p) => (
+              <div className="cap__ponto" key={p.nome}>
+                <Dot tom={p.tom} />
+                <span className="cap__pontoNome">{p.nome}</span>
+                <span className="cap__pontoKw">{p.kw}</span>
+              </div>
+            ))}
+          </div>
         </Card>
       </div>
 
-      <section>
-        <SectionTitle action={`contratada ${DEMANDA_CONTRATADA} kW`}>Capacidade elétrica</SectionTitle>
-        <Card>
-          <div className="capacity">
-            <div className="capacity__now">
-              <Metric size="xl" value={String(demandaAgora)} unit="kW" label="Demanda instantânea" tone={demandaAgora >= DEMANDA_CONTRATADA * 0.8 ? 'demand' : 'default'} />
-              <div className="capacity__meter">
-                <Meter value={demandaAgora} max={DEMANDA_CONTRATADA + 5} tone="demand" threshold={DEMANDA_CONTRATADA} />
-                <div className="capacity__legend">
-                  <span>0 kW</span>
-                  <span>marcador: demanda contratada</span>
-                  <span>{DEMANDA_CONTRATADA + 5} kW</span>
-                </div>
-              </div>
+      <div className="grid2">
+        <Card flush>
+          <div className="cardHead cardHead--row">
+            <div className="cardHead__title">Maiores consumos do mês</div>
+            <button type="button" className="btn btn--link" onClick={() => navigate('/rateio')}>Ver rateio</button>
+          </div>
+          {top.map((u) => (
+            <div className="topRow" key={u.id}>
+              <div className="topRow__unidade">{u.unidade}</div>
+              <div className="topRow__nome">{u.nome}</div>
+              <div className="topRow__kwh">{num(u.kwh, 1)} kWh</div>
+              <div className="topRow__total">R$ {brl(u.total)}</div>
             </div>
+          ))}
+        </Card>
 
-            <div className="chart" role="img" aria-label="Demanda das últimas 12 leituras">
-              {DEMANDA_SERIE.map((v, i) => (
-                <div className="chart__col" key={i}>
-                  <div
-                    className={`chart__bar ${v > DEMANDA_CONTRATADA ? 'chart__bar--over' : ''}`}
-                    style={{ height: `${(v / (DEMANDA_CONTRATADA + 5)) * 100}%` }}
-                  />
+        <div className="stack stack--tight">
+          <div className="alerta">
+            <TriangleAlert size={18} strokeWidth={2} className="alerta__icon" />
+            <div>
+              <div className="alerta__title">{totais.vazios} unidades sem cadastro completo</div>
+              <p className="alerta__body">
+                Sem morador vinculado, a sessão não entra no rateio da unidade. Envie o convite
+                antes do fechamento em 01/09.
+              </p>
+              <button type="button" className="btn btn--outline btn--sm alerta__cta"
+                onClick={() => navigate('/moradores')}>
+                Abrir moradores
+              </button>
+            </div>
+          </div>
+
+          <Card className="fechamento">
+            <div className="cardHead__title">Fechamento de {MES_REFERENCIA.split(' de ')[0]}</div>
+            <div className="check">
+              {checklist.map((c) => (
+                <div className="check__row" key={c.label}>
+                  {c.feito
+                    ? <CircleCheck size={16} strokeWidth={2} className="check__icon check__icon--ok" />
+                    : <CircleDashed size={16} strokeWidth={2} className="check__icon" />}
+                  <div>
+                    <div className="check__label">{c.label}</div>
+                    <div className="check__hint">{c.hint}</div>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
-        </Card>
-      </section>
-
-      {THROTTLING.length ? (
-        <InfoBanner tone="warning" title={`${THROTTLING.length} eventos de throttling neste mês`}>
-          O balanceamento reduziu a potência entregue quando a demanda passou de {DEMANDA_CONTRATADA} kW.
-          Nenhum morador foi cobrado a mais por isso — a sessão apenas leva mais tempo. Um aumento de
-          demanda contratada eliminaria a espera nos horários de pico.
-        </InfoBanner>
-      ) : null}
-
-      <div className="grid grid--2">
-        <section>
-          <SectionTitle action={`${emFalha ? '1 em falha' : 'todos operantes'}`}>Pontos de recarga</SectionTitle>
-          <Card flush>
-            <table className="table">
-              <tbody>
-                {PONTOS.map((p) => (
-                  <tr key={p.id}>
-                    <td>
-                      <div className="table__strong">{p.nome}</div>
-                      <div className="table__hint">
-                        {p.unidade ? `Unidade ${p.unidade}` : 'Sem sessão'} · {fmt(p.potencia, 1)} kW
-                      </div>
-                    </td>
-                    <td className="table__num tnum">{fmt(p.kwhMes)} kWh</td>
-                    <td className="table__right">
-                      <StatusPill status={ESTADO[p.estado].pill}>{ESTADO[p.estado].label}</StatusPill>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <Button onClick={() => navigate('/rateio')}>Revisar o rateio</Button>
           </Card>
-        </section>
-
-        <section>
-          <SectionTitle>Eventos de throttling</SectionTitle>
-          <Card flush>
-            <table className="table">
-              <tbody>
-                {THROTTLING.map((t, i) => (
-                  <tr key={i}>
-                    <td>
-                      <div className="table__strong">{t.dia} · {t.hora}</div>
-                      <div className="table__hint">{t.pontos} pontos simultâneos · {t.duracao}</div>
-                    </td>
-                    <td className="table__right table__num tnum">
-                      <span className="over">{t.pico} kW</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Card>
-          <p className="footnote">
-            Energia repassada a custo de R$ {fmt(TARIFA)} por kWh, sem margem — ANEEL RN 1.000/2021.
-          </p>
-        </section>
+        </div>
       </div>
     </div>
   );

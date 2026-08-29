@@ -1,171 +1,165 @@
-import { useMemo, useState } from 'react';
-import { FileDown, Table2 } from 'lucide-react';
-import { Card, SectionTitle, Metric, StatusPill, Button, InfoBanner } from '../components/Primitives';
-import {
-  RATEIO, TARIFA, TAXA_ACESSO, TAXA_OCUPACAO, fmt,
-  custoEnergia, custoOcupacao, totalUnidade, CONDOMINIO,
-} from '../data/condominio';
+import { useMemo } from 'react';
+import { FileText, FileDown, Info } from 'lucide-react';
+import { Card, Kpi, PageTitle, Pill, Button, Busca, Filtros } from '../components/ui';
+import { usePortal } from '../state/PortalState';
+import { TARIFA, TAXA_ACESSO, MES_REFERENCIA, brl, num } from '../data/portal';
 import './pages.css';
 
-const MESES = [
-  { value: 'agosto', label: 'Agosto de 2026', destino: 'boleto de setembro' },
-  { value: 'julho', label: 'Julho de 2026', destino: 'boleto de agosto' },
+const COLUNAS = ['Unidade', 'Morador', 'Sess.', 'kWh', 'Energia', 'Acesso', 'Ocupação', 'Total'];
+const FILTROS = [
+  { value: 'todas', label: 'Todas' },
+  { value: 'consumo', label: 'Com consumo' },
+  { value: 'ocupacao', label: 'Com ocupação' },
 ];
 
-/** Julho fechou com menos consumo; o protótipo escala o mês corrente. */
-const escala = (mes) => (mes === 'julho' ? 0.78 : 1);
-
 export default function Rateio() {
-  const [mes, setMes] = useState('agosto');
-  const [baixado, setBaixado] = useState('');
+  const {
+    unidades, totais, busca, setBusca, filtroRateio, setFiltroRateio,
+    exportado, setExportado, flash,
+  } = usePortal();
 
-  const linhas = useMemo(
-    () => RATEIO.map((r) => {
-      const k = escala(mes);
-      const kwh = r.kwh * k;
-      const ocupacaoMin = mes === 'julho' ? 0 : r.ocupacaoMin;
-      return { ...r, kwh, ocupacaoMin, sessoes: Math.max(1, Math.round(r.sessoes * k)) };
-    }),
-    [mes],
-  );
+  // Ordenadas pelo valor: a conversa com a administradora começa pelo maior.
+  const linhas = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    return unidades
+      .filter((u) => (filtroRateio === 'consumo' ? u.kwh > 0 : filtroRateio === 'ocupacao' ? u.ocupMin > 0 : true))
+      .filter((u) => (q ? `${u.unidade} ${u.nome}`.toLowerCase().includes(q) : true))
+      .sort((a, b) => b.total - a.total);
+  }, [unidades, busca, filtroRateio]);
 
-  const totais = linhas.reduce(
-    (a, r) => ({
-      kwh: a.kwh + r.kwh,
-      energia: a.energia + custoEnergia(r.kwh),
-      ocupacao: a.ocupacao + custoOcupacao(r.ocupacaoMin),
-      acesso: a.acesso + TAXA_ACESSO,
-    }),
-    { kwh: 0, energia: 0, ocupacao: 0, acesso: 0 },
-  );
-  const totalGeral = totais.energia + totais.ocupacao + totais.acesso;
-  const mesAtual = MESES.find((m) => m.value === mes);
+  const csv = useMemo(() => ['unidade;kwh;energia;acesso;ocupacao;total']
+    .concat(linhas.slice(0, 3).map((u) =>
+      [u.id, num(u.kwh), num(u.energia), num(u.taxa), num(u.ocup), num(u.total)].join(';')))
+    .join('\n'), [linhas]);
 
-  // Exporta o mesmo fechamento que a tela mostra, para conferência.
-  const baixar = (formato) => {
-    const cab = ['Unidade', 'Torre', 'Morador', 'Sessoes', 'kWh', 'Energia', 'Ocupacao', 'Taxa de acesso', 'Total'];
-    const linhasCsv = linhas.map((r) => [
-      r.unidade, r.torre, r.morador, r.sessoes,
-      fmt(r.kwh), fmt(custoEnergia(r.kwh)), fmt(custoOcupacao(r.ocupacaoMin)),
-      fmt(TAXA_ACESSO), fmt(totalUnidade(r)),
-    ]);
-    const csv = [cab, ...linhasCsv].map((l) => l.join(';')).join('\n');
-    const blob = new Blob([`﻿${csv}`], { type: 'text/csv;charset=utf-8' });
+  const exportar = () => {
+    const conteudo = ['unidade;kwh;energia;acesso;ocupacao;total']
+      .concat(unidades.map((u) =>
+        [u.id, num(u.kwh), num(u.energia), num(u.taxa), num(u.ocup), num(u.total)].join(';')))
+      .join('\n');
+    const blob = new Blob([`﻿${conteudo}`], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `rateio-${mes}-2026.csv`;
+    a.download = 'rateio-agosto-2026.csv';
     a.click();
     URL.revokeObjectURL(url);
-    setBaixado(formato);
-    setTimeout(() => setBaixado(''), 2600);
+    setExportado(true);
+    flash(`CSV de ${MES_REFERENCIA} gerado — ${unidades.length} linhas`);
   };
 
   return (
     <div className="stack">
-      <header className="page-head">
-        <div className="page-head__row">
-          <div>
-            <h1 className="page-head__title">Rateio</h1>
-            <p className="page-head__sub">
-              {CONDOMINIO.nome} · fechamento vai para o {mesAtual.destino}
-            </p>
+      <PageTitle
+        title={`Rateio de ${MES_REFERENCIA}`}
+        tag={<Pill tom="idle">Em aberto · fecha em 01/09</Pill>}
+        sub="Energia a custo, sem margem. Medição do SEMS consolidada por unidade, com a tarifa travada no início de cada sessão."
+      >
+        <Button variant="outline" icon={FileText}>Prévia por unidade</Button>
+        <Button icon={FileDown} onClick={exportar}>{exportado ? 'CSV gerado' : 'Exportar CSV'}</Button>
+      </PageTitle>
+
+      <div className="grid4">
+        <Kpi eyebrow="Total a ratear" value={`R$ ${brl(totais.geral)}`}
+          hint={`${totais.comConsumo} unidades com consumo em ${MES_REFERENCIA}`} />
+        <Kpi eyebrow="Energia medida" value={num(totais.kwh, 1)} unit="kWh"
+          hint={`R$ ${brl(totais.energia)} a R$ ${brl(TARIFA)} por kWh`} />
+        <Kpi eyebrow="Taxa de acesso" value={`R$ ${brl(totais.acesso)}`}
+          hint={`${totais.ativos} unidades × R$ ${brl(TAXA_ACESSO)}`} />
+        <Kpi eyebrow="Ocupação" value={`R$ ${brl(totais.ocupacao)}`} tone="demand"
+          hint={`${totais.comOcupacao} unidades com minutos excedentes`} />
+      </div>
+
+      <Card flush>
+        <div className="tableHead">
+          <div className="tableHead__left">
+            <span className="cardHead__title">Unidades</span>
+            <span className="cardHead__hint">{linhas.length} de 40 · ordenadas pelo valor</span>
           </div>
-          <div className="page-head__actions">
-            <Button variant="outline" icon={Table2} onClick={() => baixar('CSV')}>CSV</Button>
-            <Button variant="outline" icon={FileDown} onClick={() => baixar('PDF')}>PDF</Button>
+          <div className="tableHead__right">
+            <Busca placeholder="Unidade ou morador" value={busca} onChange={setBusca} />
+            <Filtros opcoes={FILTROS} valor={filtroRateio} onChange={setFiltroRateio} />
           </div>
         </div>
-      </header>
 
-      <div className="segmented">
-        {MESES.map((m) => (
-          <button
-            key={m.value}
-            type="button"
-            className={`segmented__opt ${mes === m.value ? 'is-on' : ''}`}
-            onClick={() => setMes(m.value)}
-          >
-            {m.label}
-          </button>
-        ))}
-      </div>
+        <div className="tableWrap">
+          <div className="tableMin tableMin--rateio">
+            <div className="row row--head">
+              {COLUNAS.map((c, i) => (
+                <div key={c} className={`th ${i >= 2 ? 'th--right' : ''}`}>{c}</div>
+              ))}
+            </div>
 
-      {baixado ? (
-        <InfoBanner tone="success" title={`Arquivo ${baixado} gerado`}>
-          O arquivo traz as mesmas linhas desta tela, para conferência da administradora.
-        </InfoBanner>
-      ) : null}
+            {linhas.map((u) => (
+              <div className="row row--body" key={u.id}>
+                <div className="cell cell--mono cell--strong">{u.unidade}</div>
+                <div className="cell cell--stack">
+                  <div className="cell__main">{u.nome}</div>
+                  <div className="cell__hint">
+                    {u.status === 'ativo' ? `${u.placa} · ${u.modelo}` : 'Sem veículo vinculado'}
+                  </div>
+                </div>
+                <div className="cell cell--mono cell--right cell--muted">{u.sessoes || '—'}</div>
+                <div className="cell cell--mono cell--right">{u.kwh ? num(u.kwh) : '—'}</div>
+                <div className="cell cell--mono cell--right">{u.energia ? `R$ ${brl(u.energia)}` : '—'}</div>
+                <div className="cell cell--mono cell--right cell--muted">{u.taxa ? `R$ ${brl(u.taxa)}` : '—'}</div>
+                <div className={`cell cell--mono cell--right ${u.ocup ? 'cell--fault' : 'cell--null'}`}>
+                  {u.ocup ? `R$ ${brl(u.ocup)}` : '—'}
+                </div>
+                <div className="cell cell--mono cell--right cell--strong">R$ {brl(u.total)}</div>
+              </div>
+            ))}
 
-      <div className="grid grid--4">
-        <Card><Metric size="lg" value={fmt(totais.kwh)} unit="kWh" label="Consumo medido" /></Card>
-        <Card><Metric size="lg" value={fmt(totais.energia)} unit="R$" label="Energia (a custo)" /></Card>
-        <Card>
-          <Metric size="lg" value={fmt(totais.ocupacao)} unit="R$" label="Taxa de ocupação"
-            tone={totais.ocupacao > 0 ? 'fault' : 'default'} />
-        </Card>
-        <Card><Metric size="lg" value={fmt(totalGeral)} unit="R$" label="Total do fechamento" /></Card>
-      </div>
-
-      <section>
-        <SectionTitle action={`${linhas.length} unidades com consumo`}>Fechamento por unidade</SectionTitle>
-        <Card flush>
-          <div className="scroll-x">
-            <table className="table table--grid">
-              <thead>
-                <tr>
-                  <th>Unidade</th>
-                  <th>Morador</th>
-                  <th className="table__right">Sessões</th>
-                  <th className="table__right">kWh</th>
-                  <th className="table__right">Energia</th>
-                  <th className="table__right">Ocupação</th>
-                  <th className="table__right">Acesso</th>
-                  <th className="table__right">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {linhas.map((r) => (
-                  <tr key={r.unidade}>
-                    <td>
-                      <div className="table__strong">Unidade {r.unidade}</div>
-                      <div className="table__hint">Torre {r.torre}</div>
-                    </td>
-                    <td>{r.morador}</td>
-                    <td className="table__right tnum">{r.sessoes}</td>
-                    <td className="table__right tnum">{fmt(r.kwh)}</td>
-                    <td className="table__right tnum">{fmt(custoEnergia(r.kwh))}</td>
-                    <td className="table__right tnum">
-                      {r.ocupacaoMin > 0
-                        ? <StatusPill status="fault">{fmt(custoOcupacao(r.ocupacaoMin))}</StatusPill>
-                        : <span className="table__null">—</span>}
-                    </td>
-                    <td className="table__right tnum">{fmt(TAXA_ACESSO)}</td>
-                    <td className="table__right tnum table__strong">{fmt(totalUnidade(r))}</td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colSpan={3}>Total</td>
-                  <td className="table__right tnum">{fmt(totais.kwh)}</td>
-                  <td className="table__right tnum">{fmt(totais.energia)}</td>
-                  <td className="table__right tnum">{fmt(totais.ocupacao)}</td>
-                  <td className="table__right tnum">{fmt(totais.acesso)}</td>
-                  <td className="table__right tnum">{fmt(totalGeral)}</td>
-                </tr>
-              </tfoot>
-            </table>
+            <div className="row row--total">
+              <div className="th th--span2">Total a ratear</div>
+              <div className="cell cell--mono cell--right cell--muted cell--strong">{totais.sessoes}</div>
+              <div className="cell cell--mono cell--right cell--strong">{num(totais.kwh, 1)}</div>
+              <div className="cell cell--mono cell--right cell--strong">R$ {brl(totais.energia)}</div>
+              <div className="cell cell--mono cell--right cell--strong">R$ {brl(totais.acesso)}</div>
+              <div className="cell cell--mono cell--right cell--strong cell--fault">R$ {brl(totais.ocupacao)}</div>
+              <div className="cell cell--mono cell--right cell--total">R$ {brl(totais.geral)}</div>
+            </div>
           </div>
-        </Card>
-      </section>
+        </div>
+      </Card>
 
-      <InfoBanner tone="success" title="Grupo A · condomínio">
-        Energia repassada a custo de R$ {fmt(TARIFA)} por kWh, sem margem — ANEEL RN 1.000/2021.
-        A taxa de acesso de R$ {fmt(TAXA_ACESSO)} por unidade cobre a infraestrutura e foi definida em
-        assembleia; a de ocupação, R$ {fmt(TAXA_OCUPACAO)} por minuto, só incide após 10 min de tolerância
-        e sempre depois de um aviso ao morador.
-      </InfoBanner>
+      <div className="grid2">
+        <Card flush>
+          <div className="cardHead"><div className="cardHead__title">Como o valor de cada unidade é formado</div></div>
+          {[
+            { label: 'Energia medida', hint: 'kWh do medidor × tarifa travada no início da sessão. Energia a custo, sem margem.', valor: `R$ ${brl(TARIFA)} / kWh` },
+            { label: 'Taxa de acesso', hint: 'Rateio da infraestrutura do ponto, cobrada de quem tem veículo vinculado.', valor: `R$ ${brl(TAXA_ACESSO)} / mês` },
+            { label: 'Taxa de ocupação', hint: 'Só depois dos 10 minutos de tolerância, por minuto excedente.', valor: 'R$ 0,25 / min' },
+          ].map((c) => (
+            <div className="compRow" key={c.label}>
+              <div className="compRow__label">
+                <div className="compRow__main">{c.label}</div>
+                <div className="compRow__hint">{c.hint}</div>
+              </div>
+              <div className="compRow__valor">{c.valor}</div>
+            </div>
+          ))}
+        </Card>
+
+        <div className="csvCard">
+          <div className="csvCard__head">
+            <Info size={18} strokeWidth={2} className="csvCard__icon" />
+            <div>
+              <div className="csvCard__title">O CSV vai para a administradora</div>
+              <p className="csvCard__body">
+                Uma linha por unidade, com kWh, energia, taxa de acesso, ocupação e total. Layout
+                fixo, ponto e vírgula como separador, decimal com vírgula — o mesmo aceito no
+                importador de boletos.
+              </p>
+            </div>
+          </div>
+          <pre className="csvCard__sample">{csv}</pre>
+          <p className="csvCard__foot">
+            O fechamento é irreversível: depois de 01/09 as sessões de agosto não mudam mais e o mês
+            seguinte começa a acumular.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
