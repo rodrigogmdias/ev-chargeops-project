@@ -15,6 +15,17 @@ Cada pasta tem seu próprio `package.json` e é instalada e executada de forma
 independente; não há workspace compartilhado. As instruções de execução ficam
 no README de cada uma.
 
+## Ambiente de demonstração
+
+Ambas as superfícies estão no ar numa VPS, sem depender de máquina local:
+
+| | |
+|---|---|
+| Portal | https://evchargeops.softmoon.io |
+| App | `exp://evchargeops.softmoon.io:8081` — abre no Expo Go 54.x |
+
+Detalhes de infraestrutura e como atualizar em [`infra/`](infra/).
+
 ## Estado
 
 - **`mobile/`** — protótipo navegável completo: 15 telas cobrindo entrada,
