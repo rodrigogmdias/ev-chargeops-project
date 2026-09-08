@@ -20,22 +20,18 @@ if [ "$ALVO" = "portal" ] || [ "$ALVO" = "tudo" ]; then
 fi
 
 if [ "$ALVO" = "app" ] || [ "$ALVO" = "tudo" ]; then
-  echo "→ anonimizando o manifesto do dev server"
-  # O dev server é público e o Expo Go recusa abrir um projeto cujo dono não
-  # bate com a conta logada no aparelho. Sem owner/projectId o manifesto fica
-  # anônimo e qualquer pessoa consegue abrir. Vale só na VPS: o repositório
-  # mantém esses campos, que o EAS Update precisa.
-  ssh -i "$KEY" "$HOST" "cd /srv/evchargeops/mobile && python3 - <<'PY'
-import json
-d = json.load(open('app.json'))
-for campo in ('extra', 'updates', 'runtimeVersion', 'owner'):
-    d['expo'].pop(campo, None)
-json.dump(d, open('app.json', 'w'), indent=2)
-PY"
-
-  echo "→ reiniciando o Metro"
-  ssh -i "$KEY" "$HOST" 'set -e; cd /srv/evchargeops/mobile; npm ci --silent --legacy-peer-deps; systemctl restart expo-metro'
+  echo "→ gerando o build web do app"
+  # O app é servido como web para que qualquer pessoa abra pelo QR, sem
+  # instalar nada e sem conta Expo. O Expo Go deixou de servir para
+  # demonstração aberta: desde o 57 no iOS exige login e membresia.
+  ssh -i "$KEY" "$HOST" 'set -e
+    cd /srv/evchargeops/mobile
+    npm ci --silent --legacy-peer-deps
+    npx expo export --platform web --output-dir dist-web
+    rm -rf /srv/evchargeops/app-web
+    mv dist-web /srv/evchargeops/app-web
+    chmod -R 755 /srv/evchargeops/app-web'
 fi
 
 echo "✓ portal: https://evchargeops.softmoon.io"
-echo "✓ app:    exp://evchargeops.softmoon.io:8081"
+echo "✓ app:    https://evchargeops.softmoon.io/app"

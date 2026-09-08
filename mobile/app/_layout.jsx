@@ -12,6 +12,7 @@ import {
 import { JetBrainsMono_400Regular, JetBrainsMono_700Bold } from '@expo-google-fonts/jetbrains-mono';
 import { AppStateProvider } from '../src/state/AppState';
 import ToastHost from '../src/components/Toast';
+import InstalarPWA from '../src/components/InstalarPWA';
 import { colors } from '../src/theme/tokens';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -60,6 +61,7 @@ export default function RootLayout() {
             <Stack.Screen name="recibo" />
           </Stack>
           <ToastHost />
+          <InstalarPWA />
         </AppStateProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

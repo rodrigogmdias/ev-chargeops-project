@@ -9,7 +9,7 @@ do protótipo sem depender de máquina local ligada.
 | IP | `104.248.14.57` |
 | DNS | `evchargeops.softmoon.io` → registro A na zona `softmoon.io` (DigitalOcean) |
 | Portal | https://evchargeops.softmoon.io |
-| App | `exp://u.expo.dev/3b0cdfae-37dc-44a2-acbb-b2b09e9331d6?channel-name=preview&runtime-version=exposdk:57.0.0` |
+| App | https://evchargeops.softmoon.io/app (PWA) |
 
 ## Como está montado
 
@@ -30,31 +30,29 @@ Há 2 GB de swap: o bundling não cabe confortavelmente em 2 GB de RAM. A
 primeira compilação leva ~3 min; as seguintes, segundos, com o cache do Metro
 quente.
 
-### Por que o app não usa mais o dev server
+### Por que o app é servido como web
 
-A partir do **Expo Go 57 no iOS**, a Expo exige login nos dois lados: no app e
-na CLI que serve o projeto, com as contas coincidindo. Um dev server público
-não tem como satisfazer isso — a VPS não está logada, e mesmo que estivesse,
-só abriria para quem usasse aquela mesma conta. A exigência não vale para
-simuladores, o que mascara o problema em teste local.
+O requisito é que **qualquer pessoa com o QR code abra o protótipo**. O Expo Go
+não atende mais a isso: desde o 57 no iOS ele exige login no aparelho e que a
+conta seja membro da conta dona do projeto. Caminhos de instalação (APK,
+TestFlight) também falham, porque excluem metade dos aparelhos ou exigem conta
+Apple paga.
 
-Por isso o app é distribuído por **EAS Update**: o bundle vai para o CDN da
-Expo, assinado, e o Expo Go carrega direto. Ganha cache no aparelho e abre em
-segundos, contra os minutos do bundle de desenvolvimento de 13 MB.
+O app é então exportado para web (`expo export --platform web`, saída estática)
+e servido em `/app`. Abre em qualquer navegador, sem instalar nada e sem conta.
 
-Publicar uma nova versão:
+**É uma PWA**: o `app/+html.jsx` traz o manifesto e as metatags da Apple, e o
+`public/` traz os ícones. No iPhone, Compartilhar → *Adicionar à Tela de Início*
+instala com ícone próprio e abre em **tela cheia**, sem a barra do Safari —
+verificado no Safari do simulador. O componente `InstalarPWA.web.jsx` mostra
+esse aviso na primeira visita, porque no iOS não existe prompt automático.
 
-```bash
-cd mobile && npx eas-cli update --branch preview --environment preview --message "..."
-```
+O `react-native-maps` não roda no navegador. `Mapa.web.jsx` substitui o mapa
+pelo desenho abstrato do design original, projetando as mesmas coordenadas —
+com um afastamento mínimo entre pinos, já que sem zoom os três pontos do
+condomínio, a ~100 m entre si, se sobrepõem.
 
-**Quem pode abrir:** o dono do projeto e membros da organização Expo. Para dar
-acesso a outra pessoa, adicione-a em
-[expo.dev](https://expo.dev/accounts/rodrigogmdias/settings/members) e peça que
-ela entre no Expo Go com a própria conta.
-
-O serviço `expo-metro` continua na VPS para desenvolvimento com simulador, onde
-a exigência de login não se aplica.
+O serviço `expo-metro` foi desativado: não era mais usado e consumia memória.
 
 ## Atualizar
 

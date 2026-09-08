@@ -1,16 +1,14 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform, TextInput } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { View, Text, StyleSheet, ScrollView, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
+import Mapa from '../../src/components/Mapa';
 import AppBar, { IconButton } from '../../src/components/AppBar';
 import Button from '../../src/components/Button';
 import Press from '../../src/components/Press';
 import Icon from '../../src/components/Icon';
 import StatusPill from '../../src/components/StatusPill';
-import { darkMapStyle } from '../../src/theme/mapStyle';
 import { colors, fonts, radius, motion } from '../../src/theme/tokens';
 import { useApp, PONTOS, USER_LOCATION } from '../../src/state/AppState';
 
@@ -95,54 +93,12 @@ export default function Buscar() {
 
       {vista === 'mapa' ? (
         <View style={{ flex: 1 }}>
-          <MapView
+          <Mapa
             ref={mapRef}
-            style={StyleSheet.absoluteFill}
-            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-            customMapStyle={darkMapStyle}
-            userInterfaceStyle="dark"
-            initialRegion={{
-              latitude: -23.5718, longitude: -46.6298,
-              latitudeDelta: 0.016, longitudeDelta: 0.016,
-            }}
-            showsPointsOfInterest={false}
-            showsCompass={false}
-            toolbarEnabled={false}
-          >
-            {/* Sua localização */}
-            <Marker coordinate={{ latitude: USER_LOCATION.lat, longitude: USER_LOCATION.lng }} anchor={{ x: 0.5, y: 0.5 }}>
-              <View style={styles.userHalo}><View style={styles.userDot} /></View>
-            </Marker>
-
-            {lista.map((p) => {
-              const on = p.id === pontoId;
-              const cor = p.livre ? colors.statusCharging : colors.statusIdle;
-              return (
-                <Marker
-                  key={p.id}
-                  coordinate={{ latitude: p.lat, longitude: p.lng }}
-                  anchor={{ x: 0.5, y: 1 }}
-                  onPress={() => focarPonto(p)}
-                  tracksViewChanges
-                >
-                  <View style={[styles.pinWrap, on && { transform: [{ scale: 1.08 }] }]}>
-                    {on ? (
-                      <LinearGradient colors={[colors.red400, colors.red600]} style={[styles.pinBubble, styles.pinBubbleOn]}>
-                        <Icon name="zap" size={13} color={colors.textOnAccent} strokeWidth={2.6} />
-                        <Text style={[styles.pinText, { color: colors.textOnAccent }]}>R$ {p.tarifa.toFixed(2).replace('.', ',')}</Text>
-                      </LinearGradient>
-                    ) : (
-                      <View style={styles.pinBubble}>
-                        <Icon name="zap" size={13} color={cor} strokeWidth={2.6} />
-                        <Text style={styles.pinText}>R$ {p.tarifa.toFixed(2).replace('.', ',')}</Text>
-                      </View>
-                    )}
-                    <View style={[styles.pinTip, { backgroundColor: on ? colors.accent : cor }]} />
-                  </View>
-                </Marker>
-              );
-            })}
-          </MapView>
+            pontos={lista}
+            pontoId={pontoId}
+            onSelecionar={focarPonto}
+          />
 
           {/* Busca + chips flutuantes */}
           <View style={styles.overlayTop} pointerEvents="box-none">
@@ -273,33 +229,6 @@ const styles = StyleSheet.create({
   chipOn: { backgroundColor: colors.surfaceInset, borderColor: 'transparent' },
   chipLabel: { fontSize: 13, fontFamily: fonts.bold, color: colors.textSubtle },
   chipLabelOn: { color: colors.textTitle },
-
-  userHalo: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: colors.statusInfoBg,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  userDot: {
-    width: 18, height: 18, borderRadius: 9, backgroundColor: colors.statusInfo,
-    borderWidth: 2, borderColor: 'rgba(255,255,255,0.4)',
-  },
-
-  pinWrap: { alignItems: 'center', gap: 4, paddingBottom: 4 },
-  pinBubble: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill,
-    backgroundColor: colors.surfaceCard, borderWidth: 1, borderColor: colors.borderSubtle,
-    shadowColor: '#000', shadowOpacity: 0.5, shadowRadius: 12, shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
-  },
-  pinBubbleOn: {
-    borderWidth: 0,
-    shadowColor: colors.accent, shadowOpacity: 0.4, shadowRadius: 10, shadowOffset: { width: 0, height: 4 },
-  },
-  pinText: { fontSize: 12, fontFamily: fonts.extrabold, color: colors.textTitle },
-  pinTip: {
-    width: 8, height: 8, borderRadius: 4,
-    shadowColor: '#000', shadowOpacity: 0.45, shadowRadius: 4, shadowOffset: { width: 0, height: 2 },
-  },
 
   preview: {
     position: 'absolute', left: 0, right: 0, bottom: 0,
