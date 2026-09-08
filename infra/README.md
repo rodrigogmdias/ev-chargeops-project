@@ -26,9 +26,16 @@ peça interação. A flag `--offline` é necessária porque o `app.json` tem um
 e morre em modo não-interativo. Também é incompatível com `--host`, daí a
 ausência dessa flag.
 
-Há 2 GB de swap: o bundling dos 3.506 módulos não cabe confortavelmente em 2 GB
-de RAM. A primeira compilação leva ~3 min; as seguintes, ~11 s com o cache do
-Metro quente.
+Há 2 GB de swap: o bundling não cabe confortavelmente em 2 GB de RAM. A
+primeira compilação leva ~3 min; as seguintes, segundos, com o cache do Metro
+quente.
+
+**O manifesto servido é anônimo, de propósito.** O `deploy.sh` remove `owner`,
+`extra.eas`, `updates` e `runtimeVersion` do `app.json` na VPS. Sem isso o Expo
+Go compara o dono do projeto com a conta logada no aparelho e recusa abrir para
+qualquer pessoa que não seja o dono — o erro é *"You're signed in to Expo Go as
+X, but not signed in to Expo CLI"*. O repositório mantém esses campos porque o
+EAS Update depende deles.
 
 ## Atualizar
 

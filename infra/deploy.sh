@@ -20,6 +20,19 @@ if [ "$ALVO" = "portal" ] || [ "$ALVO" = "tudo" ]; then
 fi
 
 if [ "$ALVO" = "app" ] || [ "$ALVO" = "tudo" ]; then
+  echo "→ anonimizando o manifesto do dev server"
+  # O dev server é público e o Expo Go recusa abrir um projeto cujo dono não
+  # bate com a conta logada no aparelho. Sem owner/projectId o manifesto fica
+  # anônimo e qualquer pessoa consegue abrir. Vale só na VPS: o repositório
+  # mantém esses campos, que o EAS Update precisa.
+  ssh -i "$KEY" "$HOST" "cd /srv/evchargeops/mobile && python3 - <<'PY'
+import json
+d = json.load(open('app.json'))
+for campo in ('extra', 'updates', 'runtimeVersion', 'owner'):
+    d['expo'].pop(campo, None)
+json.dump(d, open('app.json', 'w'), indent=2)
+PY"
+
   echo "→ reiniciando o Metro"
   ssh -i "$KEY" "$HOST" 'set -e; cd /srv/evchargeops/mobile; npm ci --silent --legacy-peer-deps; systemctl restart expo-metro'
 fi
