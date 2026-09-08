@@ -22,11 +22,12 @@ Ambas as superfícies estão no ar numa VPS, sem depender de máquina local:
 | | Link | QR |
 |---|---|---|
 | **Portal** | https://evchargeops.softmoon.io | <img src="infra/qrcodes/portal-claro.png" width="150" alt="QR do portal"> |
-| **App** | `exp://evchargeops.softmoon.io:8081` | <img src="infra/qrcodes/app-claro.png" width="150" alt="QR do app"> |
+| **App** | [abrir no Expo Go](exp://u.expo.dev/3b0cdfae-37dc-44a2-acbb-b2b09e9331d6?channel-name=preview&runtime-version=exposdk:57.0.0) | <img src="infra/qrcodes/app-claro.png" width="150" alt="QR do app"> |
 
-O portal abre em qualquer navegador. O app exige o **Expo Go 54.x** no aparelho —
-no iPhone, instale por [sign.expo.dev](https://sign.expo.dev), já que a App Store
-parou de distribuir o Expo Go depois do SDK 54.
+O portal abre em qualquer navegador. O app exige o **Expo Go 57.x** e, desde
+essa versão no iOS, que a pessoa esteja **logada no Expo Go** — e que a conta
+tenha acesso ao projeto. Para liberar alguém, adicione a conta à organização em
+[expo.dev](https://expo.dev/accounts/rodrigogmdias/settings/members).
 
 O QR do app usa o esquema `exp://`: a câmera do iPhone reconhece e oferece abrir
 no Expo Go, mas leitores genéricos de QR podem recusar um esquema que não

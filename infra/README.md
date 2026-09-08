@@ -9,7 +9,7 @@ do protótipo sem depender de máquina local ligada.
 | IP | `104.248.14.57` |
 | DNS | `evchargeops.softmoon.io` → registro A na zona `softmoon.io` (DigitalOcean) |
 | Portal | https://evchargeops.softmoon.io |
-| App | `exp://evchargeops.softmoon.io:8081` (Expo Go 54.x) |
+| App | `exp://u.expo.dev/3b0cdfae-37dc-44a2-acbb-b2b09e9331d6?channel-name=preview&runtime-version=exposdk:57.0.0` |
 
 ## Como está montado
 
@@ -30,12 +30,31 @@ Há 2 GB de swap: o bundling não cabe confortavelmente em 2 GB de RAM. A
 primeira compilação leva ~3 min; as seguintes, segundos, com o cache do Metro
 quente.
 
-**O manifesto servido é anônimo, de propósito.** O `deploy.sh` remove `owner`,
-`extra.eas`, `updates` e `runtimeVersion` do `app.json` na VPS. Sem isso o Expo
-Go compara o dono do projeto com a conta logada no aparelho e recusa abrir para
-qualquer pessoa que não seja o dono — o erro é *"You're signed in to Expo Go as
-X, but not signed in to Expo CLI"*. O repositório mantém esses campos porque o
-EAS Update depende deles.
+### Por que o app não usa mais o dev server
+
+A partir do **Expo Go 57 no iOS**, a Expo exige login nos dois lados: no app e
+na CLI que serve o projeto, com as contas coincidindo. Um dev server público
+não tem como satisfazer isso — a VPS não está logada, e mesmo que estivesse,
+só abriria para quem usasse aquela mesma conta. A exigência não vale para
+simuladores, o que mascara o problema em teste local.
+
+Por isso o app é distribuído por **EAS Update**: o bundle vai para o CDN da
+Expo, assinado, e o Expo Go carrega direto. Ganha cache no aparelho e abre em
+segundos, contra os minutos do bundle de desenvolvimento de 13 MB.
+
+Publicar uma nova versão:
+
+```bash
+cd mobile && npx eas-cli update --branch preview --environment preview --message "..."
+```
+
+**Quem pode abrir:** o dono do projeto e membros da organização Expo. Para dar
+acesso a outra pessoa, adicione-a em
+[expo.dev](https://expo.dev/accounts/rodrigogmdias/settings/members) e peça que
+ela entre no Expo Go com a própria conta.
+
+O serviço `expo-metro` continua na VPS para desenvolvimento com simulador, onde
+a exigência de login não se aplica.
 
 ## Atualizar
 
