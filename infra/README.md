@@ -54,6 +54,18 @@ condomínio, a ~100 m entre si, se sobrepõem.
 
 O serviço `expo-metro` foi desativado: não era mais usado e consumia memória.
 
+### O QR antigo, com `exp://`
+
+Um QR anterior foi distribuído apontando para `exp://evchargeops.softmoon.io:8081`.
+Ele **não abre o PWA**, e não há como fazê-lo abrir: `exp://` é um esquema
+resolvido pelo sistema operacional para o app Expo Go, e nunca chega ao servidor
+como tal. Sem o Expo Go instalado, o aparelho não abre nada.
+
+Como mitigação parcial, a porta 8081 passou a responder um 301 para
+`https://evchargeops.softmoon.io/app/`. Isso só ajuda quem abrir o host num
+navegador — não resgata o esquema `exp://`. A solução real é substituir o QR
+distribuído pelo de `infra/qrcodes/app-claro.png`.
+
 ## Atualizar
 
 O repositório é privado e a VPS não tem credencial do GitHub — o código sobe por

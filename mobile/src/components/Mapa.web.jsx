@@ -17,7 +17,9 @@ const AREA = { latMin: -23.5800, latMax: -23.5670, lngMin: -46.6340, lngMax: -46
 
 // A busca e os filtros cobrem o topo do mapa, e a prévia do ponto cobre a
 // base. Os pinos são projetados só na faixa livre entre os dois.
-const FAIXA = { esq: 14, dir: 82, topo: 26, base: 62 };
+// A base para em 52%: abaixo disso começa a prévia do ponto, que cobriria
+// os pinos. O topo em 20% deixa a busca e os filtros livres.
+const FAIXA = { esq: 14, dir: 82, topo: 20, base: 52 };
 
 const entre = (t, a, b) => a + t * (b - a);
 
@@ -48,6 +50,22 @@ function distribuir(pontos) {
     const anterior = posicoes[i - 1];
     if (posicoes[i].top - anterior.top < GAP_MIN) posicoes[i].top = anterior.top + GAP_MIN;
   }
+
+  // Afastar empurra para baixo e pode jogar o último pino sob a prévia do
+  // ponto. Se a sequência estourou a faixa, ela é recolocada dentro dela:
+  // por deslocamento quando ainda cabe, ou distribuída por igual quando não.
+  const primeiro = posicoes[0].top;
+  const ultimo = posicoes[posicoes.length - 1].top;
+  const altura = FAIXA.base - FAIXA.topo;
+
+  if (ultimo - primeiro > altura) {
+    const passo = altura / Math.max(1, posicoes.length - 1);
+    posicoes.forEach((p, i) => { p.top = FAIXA.topo + i * passo; });
+  } else if (ultimo > FAIXA.base) {
+    const desloca = ultimo - FAIXA.base;
+    posicoes.forEach((p) => { p.top -= desloca; });
+  }
+
   return Object.fromEntries(posicoes.map((p) => [p.id, { left: `${p.left}%`, top: `${p.top}%` }]));
 }
 
