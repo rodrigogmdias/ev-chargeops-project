@@ -54,17 +54,44 @@ condomínio, a ~100 m entre si, se sobrepõem.
 
 O serviço `expo-metro` foi desativado: não era mais usado e consumia memória.
 
-### O QR antigo, com `exp://`
+### O QR antigo, com `exp://`, funciona
 
-Um QR anterior foi distribuído apontando para `exp://evchargeops.softmoon.io:8081`.
-Ele **não abre o PWA**, e não há como fazê-lo abrir: `exp://` é um esquema
-resolvido pelo sistema operacional para o app Expo Go, e nunca chega ao servidor
-como tal. Sem o Expo Go instalado, o aparelho não abre nada.
+Um QR foi distribuído apontando para `exp://evchargeops.softmoon.io:8081`, do
+antigo dev server. Ele **continua funcionando**: a porta 8081 passou a servir um
+manifesto do protocolo `expo-updates` auto-hospedado.
 
-Como mitigação parcial, a porta 8081 passou a responder um 301 para
-`https://evchargeops.softmoon.io/app/`. Isso só ajuda quem abrir o host num
-navegador — não resgata o esquema `exp://`. A solução real é substituir o QR
-distribuído pelo de `infra/qrcodes/app-claro.png`.
+Isso escapa das duas travas do Expo Go 57 — a exigência de login vale para
+*modo de desenvolvimento*, e a de propriedade vale para *EAS Update*. Nenhuma
+alcança updates auto-hospedados.
+
+Quatro detalhes foram necessários, cada um custou uma rodada de erro:
+
+1. **Bundle em JavaScript puro** (`expo export --no-bytecode`). O Expo Go só
+   aceita bytecode Hermes vindo do EAS Update.
+2. **`sdkVersion` em `extra.expoClient`**, senão dá "no SDK version specified".
+   Vem de `npx expo config --type public --json`.
+3. **`scopeKey` no topo de `extra`** — não dentro de `expoClient`, como se
+   poderia supor. Confirmado inspecionando um manifesto real do EAS.
+4. **Sem resposta 304.** Servido como arquivo estático, o Caddy revalidava o
+   ETag e devolvia corpo vazio; o Expo Go ficava preso em "Opening project".
+   Os `request_header -If-None-Match` e `-If-Modified-Since` resolvem.
+
+**O simulador não serve para validar isto.** Ele entra em modo dev server,
+fica pedindo `/message?role=ios` e trava mesmo com tudo correto. Só o aparelho
+físico confirma.
+
+Regenerar depois de mudar o app:
+
+```bash
+cd mobile
+npx expo export --platform ios --platform android --no-bytecode --output-dir dist-ota
+npx expo config --type public --json > dist-ota/expo-config.json
+python3 ../infra/gerar-manifestos.py dist-ota http://evchargeops.softmoon.io:8081 exposdk:57.0.0
+rsync -az dist-ota/ root@104.248.14.57:/srv/evchargeops/ota/
+```
+
+Quem abrir `http://evchargeops.softmoon.io:8081` num navegador cai no PWA, por
+redirecionamento.
 
 ## Atualizar
 
