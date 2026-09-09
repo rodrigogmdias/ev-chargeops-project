@@ -1,0 +1,13 @@
+[Unit]
+Description=Painel de acessos do protótipo EV ChargeOps
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/srv/evchargeops/admin
+ExecStart=/usr/bin/python3 /srv/evchargeops/admin/painel.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

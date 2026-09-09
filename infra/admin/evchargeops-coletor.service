@@ -1,0 +1,7 @@
+[Unit]
+Description=Coleta de acessos a partir dos logs do Caddy
+
+[Service]
+Type=oneshot
+WorkingDirectory=/srv/evchargeops/admin
+ExecStart=/usr/bin/python3 /srv/evchargeops/admin/coletor.py

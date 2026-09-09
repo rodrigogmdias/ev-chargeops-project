@@ -101,12 +101,19 @@ def main():
     # manifesto auto-hospedado precisa ser declarado, e vai no topo de `extra`
     # — não dentro de expoClient, como confirmado num manifesto real do EAS.
     # Sem ele o Expo Go falha com "Value for (key = scopeKey) is null".
+    #
+    # Ele NÃO pode apontar para a conta Expo: com @dono/slug, o Expo Go tenta
+    # resolver o escopo contra a conta logada e quem não é o dono fica preso
+    # em "Opening project". Um escopo anônimo desvincula o manifesto da conta.
+    config.pop('owner', None)
+    extra_config = config.get('extra') or {}
+    extra_config.pop('eas', None)
+    config['extra'] = extra_config
 
     for plataforma in ('ios', 'android'):
         if plataforma not in meta['fileMetadata']:
             continue
-        dono = config.get('owner') or 'local'
-        scope_key = f"@{dono}/{config.get('slug', 'app')}"
+        scope_key = f"@anonymous/{config.get('slug', 'app')}"
         corpo, n = montar(plataforma, meta, config, scope_key)
         destino = os.path.join(BASE, f'manifesto-{plataforma}.multipart')
         with open(destino, 'w', encoding='utf-8') as f:
