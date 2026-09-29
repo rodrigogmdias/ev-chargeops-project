@@ -14,15 +14,16 @@ do protótipo sem depender de máquina local ligada.
 ## Como está montado
 
 Desde 2026-09-29 o protótipo divide o droplet `apps-01` com outros serviços
-(antes tinha o droplet `evchargeops` só para ele). Tudo roda em Docker Compose,
-em `/opt/evchargeops` (`docker-compose.yml` + `Caddyfile`, que ficam só no
-servidor por causa do hash da senha do `/admin`):
+(antes tinha o droplet `evchargeops` só para ele). Tudo roda num Compose
+**gerenciado pelo Dokploy** (https://dokploy.softmoon.io, projeto *EV ChargeOps*):
+o `docker-compose.yml` é editado e reimplantado por lá. O `Caddyfile` fica só no
+servidor, em `/opt/evchargeops`, por causa do hash da senha do `/admin`.
 
-| Serviço | Papel |
+| Container | Papel |
 |---|---|
-| `caddy` | Serve portal, PWA, `/ota` e `/admin` em HTTP; publica a **8081** direto no host |
-| `painel` | `infra/admin/painel.py`, na rede do `caddy` (por isso `127.0.0.1:8090` funciona) |
-| `coletor` | `infra/admin/coletor.py` em laço de 2 min, no lugar do timer do systemd |
+| `evchargeops-caddy` | Serve portal, PWA, `/ota` e `/admin` em HTTP; publica a **8081** direto no host |
+| `evchargeops-painel` | `infra/admin/painel.py`, na rede do caddy (por isso `127.0.0.1:8090` funciona) |
+| `evchargeops-coletor` | `infra/admin/coletor.py` em laço de 2 min, no lugar do timer do systemd |
 
 O código e os builds continuam em `/srv/evchargeops`, montado no container. A
 porta 443 é do **Traefik do Dokploy**, que termina TLS (Let's Encrypt) e
@@ -141,10 +142,9 @@ guardada na tabela `geo`. É granularidade de cidade e operadora, o que o IP
 permite; não é posição do aparelho.
 
 ```bash
-cd /opt/evchargeops
-docker compose logs painel                # o painel
-docker compose logs coletor               # a coleta, de 2 em 2 min
-docker compose exec coletor python3 -c "import sqlite3; print(sqlite3.connect('/data/acessos.db').execute('select count(*) from acessos').fetchone())"
+docker logs evchargeops-painel            # o painel
+docker logs evchargeops-coletor           # a coleta, de 2 em 2 min
+docker exec evchargeops-coletor python3 -c "import sqlite3; print(sqlite3.connect('/data/acessos.db').execute('select count(*) from acessos').fetchone())"
 ```
 
 **IP é dado pessoal sob a LGPD.** O painel avisa isso em rodapé; o banco deve
@@ -161,14 +161,15 @@ O repositório é privado e a VPS não tem credencial do GitHub — o código so
 
 ## Operação
 
+Pelo painel do Dokploy (logs, restart, redeploy) ou por SSH:
+
 ```bash
 ssh root@165.22.179.66
-cd /opt/evchargeops
 
-docker compose ps                           # estado dos serviços
-docker compose logs caddy --tail 50         # log do Caddy
-docker compose restart painel               # reiniciar o painel de acessos
-docker compose exec caddy caddy validate --config /etc/caddy/Caddyfile
+docker ps --filter name=evchargeops            # estado dos serviços
+docker logs evchargeops-caddy --tail 50        # log do Caddy
+docker restart evchargeops-painel              # reiniciar o painel de acessos
+docker exec evchargeops-caddy caddy validate --config /etc/caddy/Caddyfile
 ```
 
 ## Limitações conhecidas

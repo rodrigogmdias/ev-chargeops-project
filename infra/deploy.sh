@@ -40,7 +40,7 @@ fi
 # O painel carrega o código uma vez; o coletor roda um processo novo a cada
 # ciclo e já pega a versão sincronizada.
 echo "→ reiniciando o painel de acessos"
-ssh -i "$KEY" "$HOST" 'cd /opt/evchargeops && docker compose restart painel'
+ssh -i "$KEY" "$HOST" 'docker restart evchargeops-painel >/dev/null'
 
 echo "✓ portal: https://evchargeops.softmoon.io"
 echo "✓ app:    https://evchargeops.softmoon.io/app"
