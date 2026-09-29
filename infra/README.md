@@ -5,13 +5,29 @@ do protótipo sem depender de máquina local ligada.
 
 | Recurso | Valor |
 |---|---|
-| Droplet | `evchargeops` · s-1vcpu-2gb · Ubuntu 24.04 · NYC3 |
-| IP | `104.248.14.57` |
+| Droplet | `apps-01` · s-2vcpu-4gb · Ubuntu 24.04 · NYC1 · compartilhado (Dokploy) |
+| IP | `165.22.179.66` |
 | DNS | `evchargeops.softmoon.io` → registro A na zona `softmoon.io` (DigitalOcean) |
 | Portal | https://evchargeops.softmoon.io |
 | App | https://evchargeops.softmoon.io/app (PWA) |
 
 ## Como está montado
+
+Desde 2026-09-29 o protótipo divide o droplet `apps-01` com outros serviços
+(antes tinha o droplet `evchargeops` só para ele). Tudo roda em Docker Compose,
+em `/opt/evchargeops` (`docker-compose.yml` + `Caddyfile`, que ficam só no
+servidor por causa do hash da senha do `/admin`):
+
+| Serviço | Papel |
+|---|---|
+| `caddy` | Serve portal, PWA, `/ota` e `/admin` em HTTP; publica a **8081** direto no host |
+| `painel` | `infra/admin/painel.py`, na rede do `caddy` (por isso `127.0.0.1:8090` funciona) |
+| `coletor` | `infra/admin/coletor.py` em laço de 2 min, no lugar do timer do systemd |
+
+O código e os builds continuam em `/srv/evchargeops`, montado no container. A
+porta 443 é do **Traefik do Dokploy**, que termina TLS (Let's Encrypt) e
+encaminha para o `caddy`; `trusted_proxies` no Caddyfile mantém o IP real do
+visitante no log, que é o que o coletor conta.
 
 O **portal** é build estático (`web/dist`) servido pelo Caddy, que cuida do
 certificado Let's Encrypt sozinho. O `try_files` devolve `index.html` para
@@ -87,7 +103,7 @@ cd mobile
 npx expo export --platform ios --platform android --no-bytecode --output-dir dist-ota
 npx expo config --type public --json > dist-ota/expo-config.json
 python3 ../infra/gerar-manifestos.py dist-ota https://evchargeops.softmoon.io/ota exposdk:57.0.0
-rsync -az dist-ota/ root@104.248.14.57:/srv/evchargeops/ota/
+rsync -az dist-ota/ root@165.22.179.66:/srv/evchargeops/ota/
 ```
 
 Repare que a URL base dos manifestos é **`https://.../ota`**, e não a porta
@@ -103,7 +119,7 @@ redirecionamento.
 
 `/admin` mostra quantas pessoas abriram o protótipo, por onde e de onde. Fica
 atrás de `basic_auth` no Caddy — o hash bcrypt vive só no servidor, em
-`/etc/caddy/Caddyfile`, e a senha não está neste repositório.
+`/opt/evchargeops/Caddyfile`, e a senha não está neste repositório.
 
 A contagem **lê os logs de acesso do Caddy**, em vez de instrumentar o caminho
 que serve o conteúdo: um erro no contador não tem como derrubar a demonstração,
@@ -113,7 +129,6 @@ e nada é injetado no bundle do app.
 |---|---|
 | [`admin/coletor.py`](admin/coletor.py) | Varre os logs a cada 2 min e alimenta o SQLite |
 | [`admin/painel.py`](admin/painel.py) | Serve o painel em `127.0.0.1:8090`, só stdlib |
-| `admin/evchargeops-*.service` · `.timer` | Units do systemd, copiadas para `/etc/systemd/system/` |
 
 Um acesso conta quando alguém busca o **manifesto** do Expo Go (`/` na 8081,
 com o header `expo-platform`) ou carrega o **PWA** (`/app`). Requisições de
@@ -126,9 +141,10 @@ guardada na tabela `geo`. É granularidade de cidade e operadora, o que o IP
 permite; não é posição do aparelho.
 
 ```bash
-systemctl status evchargeops-painel      # o painel
-systemctl list-timers evchargeops-coletor # a coleta, de 2 em 2 min
-sqlite3 /srv/evchargeops/admin/acessos.db 'select * from acessos'
+cd /opt/evchargeops
+docker compose logs painel                # o painel
+docker compose logs coletor               # a coleta, de 2 em 2 min
+docker compose exec coletor python3 -c "import sqlite3; print(sqlite3.connect('/data/acessos.db').execute('select count(*) from acessos').fetchone())"
 ```
 
 **IP é dado pessoal sob a LGPD.** O painel avisa isso em rodapé; o banco deve
@@ -146,12 +162,13 @@ O repositório é privado e a VPS não tem credencial do GitHub — o código so
 ## Operação
 
 ```bash
-ssh root@104.248.14.57
+ssh root@165.22.179.66
+cd /opt/evchargeops
 
-systemctl status caddy evchargeops-painel   # estado dos serviços
-journalctl -u caddy -n 50                   # log do Caddy
-systemctl restart evchargeops-painel        # reiniciar o painel de acessos
-caddy validate --config /etc/caddy/Caddyfile
+docker compose ps                           # estado dos serviços
+docker compose logs caddy --tail 50         # log do Caddy
+docker compose restart painel               # reiniciar o painel de acessos
+docker compose exec caddy caddy validate --config /etc/caddy/Caddyfile
 ```
 
 ## Limitações conhecidas
